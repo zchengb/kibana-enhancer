@@ -1,25 +1,51 @@
-console.log('Content script works!');
-console.log('Must reload extension for modifications to take effect.');
+let hasInitialized = false;
 
-// const selectElement = document.createElement('select');
-// selectElement.id = 'customSelect';
-// selectElement.classList.add('euiFlexItem');
-//
-// const options = ['Option 1', 'Option 2', 'Option 3'];
-// options.forEach((optionText) => {
-//   const option = document.createElement('option');
-//   option.textContent = optionText;
-//   option.value = optionText.toLowerCase().replace(/\s+/g, '-');
-//   selectElement.appendChild(option);
-// });
-//
-// const queryContainer = Array.from(
-//   document.querySelectorAll(
-//     '.euiFlexGroup.euiFlexGroup--gutterSmall.euiFlexGroup--directionRow'
-//   )
-// ).filter((element) => {
-//   // 检查当前元素的类名数量是否等于指定值
-//   return element.classList.length === 3;
-// })[0];
-// queryContainer.appendChild(selectElement);
-console.log('append input selector done.');
+const addInputSelector = () => {
+  const selectElement = document.createElement('select');
+  selectElement.id = 'queryCriteriaSelector';
+  selectElement.classList.add('queryCriteria');
+
+  const placeholderOption = document.createElement('option');
+  placeholderOption.textContent = 'Select Query criteria';
+  placeholderOption.disabled = true;
+  placeholderOption.selected = true;
+  selectElement.appendChild(placeholderOption);
+
+  const options = ['Option 1', 'Option 2', 'Option 3'];
+  options.forEach((optionText) => {
+    const option = document.createElement('option');
+    option.textContent = optionText;
+    option.value = optionText.toLowerCase().replace(/\s+/g, '-');
+    selectElement.appendChild(option);
+  });
+
+  const queryContainer = document.querySelector(
+    '.globalQueryBar .euiFlexItem.euiFlexItem--flexGrowZero .euiFlexGroup.euiFlexGroup--gutterSmall.euiFlexGroup--directionRow'
+  );
+  if (queryContainer) {
+    queryContainer.insertBefore(selectElement, queryContainer.lastChild);
+    hasInitialized = true;
+    console.log('append input selector done.');
+  } else {
+    console.log('NOT FOUND Kibana pages.');
+  }
+};
+
+const observer = new MutationObserver((mutations) => {
+  if (isDiscoverPage() && !hasInitialized) {
+    addInputSelector();
+  }
+});
+
+const observerOptions = {
+  childList: true,
+  subtree: true,
+  attributes: true,
+  characterData: true,
+};
+
+observer.observe(document, observerOptions);
+
+const isDiscoverPage = () => {
+  return window.location.href.includes('app/discover');
+};
