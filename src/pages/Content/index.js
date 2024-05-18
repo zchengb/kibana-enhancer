@@ -153,13 +153,14 @@ const removeAllOptionsExceptFirst = (selectElement) => {
 };
 
 const saveQueryCondition = () => {
+  const queryCondition = getSearchInputElement().value;
+  if (!queryCondition) {
+    return;
+  }
+
   const queryConditionTitle = prompt('Please input query condition title');
 
   if (queryConditionTitle) {
-    const queryCondition = getSearchInputElement().value;
-
-    console.log('queryConditions', queryConditions);
-
     queryConditions.push({
       label: queryConditionTitle,
       value: queryCondition,
