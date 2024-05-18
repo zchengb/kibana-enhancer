@@ -1,3 +1,9 @@
 .conditionTableViewWrapper {
   width: 100%;
+
+  .operationBar {
+    display: flex;
+    margin-bottom: 24px;
+    gap: 12px;
+  }
 }

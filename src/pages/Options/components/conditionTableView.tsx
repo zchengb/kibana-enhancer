@@ -1,6 +1,11 @@
 import React, { useState } from 'react';
 import type { DragEndEvent } from '@dnd-kit/core';
-import { DndContext, PointerSensor, useSensor, useSensors } from '@dnd-kit/core';
+import {
+  DndContext,
+  PointerSensor,
+  useSensor,
+  useSensors,
+} from '@dnd-kit/core';
 import { restrictToVerticalAxis } from '@dnd-kit/modifiers';
 import {
   arrayMove,
@@ -9,9 +14,9 @@ import {
   verticalListSortingStrategy,
 } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
-import { Card, Table } from "antd";
+import { Button, Card, Space, Table } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
-import "./conditionTableView.scss"
+import './conditionTableView.scss';
 
 interface DataType {
   key: string;
@@ -21,12 +26,22 @@ interface DataType {
 
 const columns: ColumnsType<DataType> = [
   {
-    title: 'Name',
+    title: 'Title',
     dataIndex: 'name',
   },
   {
-    title: 'Address',
+    title: 'Template',
     dataIndex: 'address',
+  },
+  {
+    title: 'Action',
+    key: 'action',
+    render: (_, record) => (
+      <Space size="middle">
+        <a>Edit</a>
+        <a>Delete</a>
+      </Space>
+    ),
   },
 ];
 
@@ -35,7 +50,14 @@ interface RowProps extends React.HTMLAttributes<HTMLTableRowElement> {
 }
 
 const Row = (props: RowProps) => {
-  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({
     id: props['data-row-key'],
   });
 
@@ -47,7 +69,15 @@ const Row = (props: RowProps) => {
     ...(isDragging ? { position: 'relative', zIndex: 9999 } : {}),
   };
 
-  return <tr {...props} ref={setNodeRef} style={style} {...attributes} {...listeners} />;
+  return (
+    <tr
+      {...props}
+      ref={setNodeRef}
+      style={style}
+      {...attributes}
+      {...listeners}
+    />
+  );
 };
 
 const ConditionTableView: React.FC = () => {
@@ -75,7 +105,7 @@ const ConditionTableView: React.FC = () => {
       activationConstraint: {
         distance: 1,
       },
-    }),
+    })
   );
 
   const onDragEnd = ({ active, over }: DragEndEvent) => {
@@ -89,8 +119,21 @@ const ConditionTableView: React.FC = () => {
   };
 
   return (
-    <Card title="🌈 Condition Template" bordered={false} className={"conditionTableViewWrapper"}>
-      <DndContext sensors={sensors} modifiers={[restrictToVerticalAxis]} onDragEnd={onDragEnd}>
+    <Card
+      title="🌈 Condition Template"
+      bordered={false}
+      className={'conditionTableViewWrapper'}
+    >
+      <div className={'operationBar'}>
+        <Button type="primary" className={'addButton'}>Create</Button>
+        <Button className={'importButton'}>Import in YAML</Button>
+        <Button className={'exportButton'}>Export as YAML</Button>
+      </div>
+      <DndContext
+        sensors={sensors}
+        modifiers={[restrictToVerticalAxis]}
+        onDragEnd={onDragEnd}
+      >
         <SortableContext
           items={dataSource.map((i) => i.key)}
           strategy={verticalListSortingStrategy}
