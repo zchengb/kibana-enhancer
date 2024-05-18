@@ -55,7 +55,7 @@ const addInputSelector = () => {
     selectElement.appendChild(option);
   });
 
-  const queryContainer = getQueryBarElement();
+  const queryContainer = getQueryInputElement();
 
   if (queryContainer) {
     queryContainer.insertBefore(selectElement, queryContainer.lastChild);
@@ -75,7 +75,7 @@ const getSearchInputElement = () => {
   return document.querySelector('.euiTextArea');
 };
 
-const getQueryBarElement = () => {
+const getQueryInputElement = () => {
   return document.querySelector(
     '.globalQueryBar .euiFlexItem.euiFlexItem--flexGrowZero .euiFlexGroup.euiFlexGroup--gutterSmall.euiFlexGroup--directionRow'
   );
@@ -83,6 +83,12 @@ const getQueryBarElement = () => {
 
 const getSelectorElement = () => {
   return document.getElementById('queryConditionSelector');
+};
+
+const getQueryBarElement = () => {
+  return document.querySelector(
+    '.euiFormControlLayout.euiFormControlLayout--group.kbnQueryBar__wrap'
+  );
 };
 
 function promptForInputs(params) {
@@ -95,9 +101,26 @@ function promptForInputs(params) {
   return formInputs;
 }
 
+const addSaveQueryConditionButton = () => {
+  const queryBarElement = getQueryBarElement();
+
+  const saveConditionButton = document.createElement('div');
+  saveConditionButton.id = 'saveConditionButton';
+  saveConditionButton.className = 'saveConditionButton';
+
+  const textSpan = document.createElement('span');
+  textSpan.textContent = 'Save Condition';
+  textSpan.className = 'saveConditionText';
+
+  saveConditionButton.appendChild(textSpan);
+
+  queryBarElement.insertBefore(saveConditionButton, queryBarElement.lastChild);
+};
+
 const observer = new MutationObserver((mutations) => {
   if (isDiscoverPage() && !hasInitialized) {
     addInputSelector();
+    addSaveQueryConditionButton();
   }
 });
 

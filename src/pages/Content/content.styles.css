@@ -13,3 +13,26 @@
     outline: none !important;
     border: #D2D9E8 1px solid !important;
 }
+
+.queryCondition option:first-child {
+    display: none;
+    color: #68717D;
+}
+
+.saveConditionButton {
+    color: #0071c2;
+    font-size: 14px;
+    font-weight: 400;
+    display: flex;
+    align-items: center;
+    background-color: #FBFCFD;
+    padding: 0 8px;
+    width: 140px;
+    cursor: pointer;
+    box-sizing: border-box;
+}
+
+.saveConditionText:hover {
+    text-decoration-color: #0071c2;
+    text-decoration-line: underline;
+}
