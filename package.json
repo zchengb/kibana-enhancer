@@ -1,11 +1,11 @@
 {
   "name": "kibana-enhancer",
   "version": "1.0.0",
-  "description": "A chrome extension boilerplate built with React 18, Webpack 5, and Webpack Dev Server 4",
+  "description": "Enhance Kibana Discovery for streamlined log analysis: custom query condition and automate decoding.",
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/lxieyang/chrome-extension-boilerplate-react.git"
+    "url": "https://github.com/zchengb/kibana-enhancer"
   },
   "scripts": {
     "build": "node utils/build.js",
