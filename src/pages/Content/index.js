@@ -173,10 +173,21 @@ const saveQueryCondition = () => {
   }
 };
 
+const addEventListenerOnSearchInput = () => {
+  const searchInputElement = getSearchInputElement();
+  if (searchInputElement) {
+    searchInputElement.addEventListener('change', () => {
+      getSelectorElement().options[0].selected = true;
+    });
+    console.log('Successfully add event listener on search input element.');
+  }
+};
+
 const observer = new MutationObserver((mutations) => {
   if (isDiscoverPage() && !hasInitialized) {
     addInputSelector();
     addSaveQueryConditionButton();
+    addEventListenerOnSearchInput();
   }
 });
 
