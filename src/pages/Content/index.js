@@ -38,11 +38,11 @@ function selectChangeListener() {
 
 const addInputSelector = () => {
   const selectElement = document.createElement('select');
-  selectElement.id = 'queryCriteriaSelector';
-  selectElement.classList.add('queryCriteria');
+  selectElement.id = 'queryConditionSelector';
+  selectElement.classList.add('queryCondition');
 
   const placeholderOption = document.createElement('option');
-  placeholderOption.textContent = 'Select Query criteria';
+  placeholderOption.textContent = 'Select Query Condition';
   placeholderOption.disabled = true;
   placeholderOption.selected = true;
   selectElement.appendChild(placeholderOption);
@@ -82,7 +82,7 @@ const getQueryBarElement = () => {
 };
 
 const getSelectorElement = () => {
-  return document.getElementById('queryCriteriaSelector');
+  return document.getElementById('queryConditionSelector');
 };
 
 function promptForInputs(params) {
