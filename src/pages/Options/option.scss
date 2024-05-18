@@ -1,0 +1,36 @@
+.optionsContainer {
+  display: flex;
+  justify-content: center;
+
+  .header {
+    display: flex;
+    position: fixed;
+    top: 0;
+    z-index: 1;
+    align-items: center;
+    background-color: #fff;
+    width: 100%;
+    box-shadow: 0 2px 6px #d2d0ce;
+    height: 56px;
+    padding: 0 12px;
+    gap: 8px;
+    box-sizing: border-box;
+
+    .icon {
+      width: 24px;
+      height: 24px;
+    }
+
+    .title {
+      font-size: 16px;
+      letter-spacing: .25px;
+      font-weight: 700;
+    }
+  }
+
+  .main {
+    width: 80%;
+    margin-top: 120px;
+
+  }
+}
