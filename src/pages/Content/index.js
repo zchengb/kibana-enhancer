@@ -1,6 +1,4 @@
-let hasInitialized = false;
-
-function selectChangeListener() {
+const selectorChangeListener = () => {
   let selectedValue = getSelectorElement().value;
 
   const params = [];
@@ -34,36 +32,37 @@ function selectChangeListener() {
     const changeEvent = new Event('change', { bubbles: true });
     searchInput.dispatchEvent(changeEvent);
   }
-}
+};
 
-const addInputSelector = () => {
-  const selectElement = document.createElement('select');
-  selectElement.id = 'queryConditionSelector';
-  selectElement.classList.add('queryCondition');
-
-  const placeholderOption = document.createElement('option');
-  placeholderOption.textContent = 'Select Query Condition';
-  placeholderOption.disabled = true;
-  placeholderOption.selected = true;
-  selectElement.appendChild(placeholderOption);
-
-  const options = [];
-  options.forEach((optionItem) => {
+const injectQuerySelectorOptions = (selectorElement) => {
+  queryConditions.forEach((optionItem) => {
     const option = document.createElement('option');
     option.textContent = optionItem.label;
     option.value = optionItem.value;
-    selectElement.appendChild(option);
+    selectorElement.appendChild(option);
   });
+};
 
-  const queryContainer = getQueryInputElement();
+const addInputSelector = () => {
+  const queryContainer = getQueryFilterBarElement();
 
   if (queryContainer) {
+    const selectElement = document.createElement('select');
+    selectElement.id = 'queryConditionSelector';
+    selectElement.classList.add('queryCondition');
+
+    const placeholderOption = document.createElement('option');
+    placeholderOption.textContent = 'Select Query Condition';
+    placeholderOption.disabled = true;
+    placeholderOption.selected = true;
+    selectElement.appendChild(placeholderOption);
+
+    injectQuerySelectorOptions(selectElement);
+
     queryContainer.insertBefore(selectElement, queryContainer.lastChild);
     hasInitialized = true;
-    selectElement.addEventListener('change', selectChangeListener);
-    console.log('successfully append input selector.');
-  } else {
-    console.log('NOT FOUND Kibana pages.');
+    selectElement.addEventListener('change', selectorChangeListener);
+    console.log('successfully inject input selector.');
   }
 };
 
@@ -75,7 +74,7 @@ const getSearchInputElement = () => {
   return document.querySelector('.euiTextArea');
 };
 
-const getQueryInputElement = () => {
+const getQueryFilterBarElement = () => {
   return document.querySelector(
     '.globalQueryBar .euiFlexItem.euiFlexItem--flexGrowZero .euiFlexGroup.euiFlexGroup--gutterSmall.euiFlexGroup--directionRow'
   );
@@ -85,13 +84,13 @@ const getSelectorElement = () => {
   return document.getElementById('queryConditionSelector');
 };
 
-const getQueryBarElement = () => {
+const getSearchBarElement = () => {
   return document.querySelector(
     '.euiFormControlLayout.euiFormControlLayout--group.kbnQueryBar__wrap'
   );
 };
 
-function promptForInputs(params) {
+const promptForInputs = (params) => {
   const formInputs = {};
   params.forEach((param) => {
     const value = prompt(`Please input {${param}}:`);
@@ -99,22 +98,78 @@ function promptForInputs(params) {
   });
 
   return formInputs;
-}
+};
 
 const addSaveQueryConditionButton = () => {
-  const queryBarElement = getQueryBarElement();
+  const queryBarElement = getSearchBarElement();
 
-  const saveConditionButton = document.createElement('div');
-  saveConditionButton.id = 'saveConditionButton';
-  saveConditionButton.className = 'saveConditionButton';
+  if (queryBarElement) {
+    const saveConditionButton = document.createElement('div');
+    saveConditionButton.id = 'saveConditionButton';
+    saveConditionButton.className = 'saveConditionButton';
 
-  const textSpan = document.createElement('span');
-  textSpan.textContent = 'Save Condition';
-  textSpan.className = 'saveConditionText';
+    const textSpan = document.createElement('span');
+    textSpan.textContent = 'Save Condition';
+    textSpan.className = 'saveConditionText';
 
-  saveConditionButton.appendChild(textSpan);
+    saveConditionButton.appendChild(textSpan);
 
-  queryBarElement.insertBefore(saveConditionButton, queryBarElement.lastChild);
+    queryBarElement.insertBefore(
+      saveConditionButton,
+      queryBarElement.lastChild
+    );
+
+    saveConditionButton.addEventListener('click', saveQueryCondition);
+    console.log('successfully inject save condition button.');
+  }
+};
+
+const loadQueryConditions = () => {
+  const storedQueryConditions =
+    window.localStorage.getItem('queryConditions') || '[]';
+  console.log('successfully load query conditions.');
+  return JSON.parse(storedQueryConditions);
+};
+
+const saveQueryConditions = () => {
+  return window.localStorage.setItem(
+    'queryConditions',
+    JSON.stringify(queryConditions)
+  );
+};
+
+const refreshSelectorOptions = () => {
+  const queryConditionSelector = getSelectorElement();
+  removeAllOptionsExceptFirst(queryConditionSelector);
+  injectQuerySelectorOptions(queryConditionSelector);
+};
+
+const removeAllOptionsExceptFirst = (selectElement) => {
+  const options = selectElement.querySelectorAll('option');
+
+  for (let i = options.length - 1; i > 0; i--) {
+    selectElement.removeChild(options[i]);
+  }
+};
+
+const saveQueryCondition = () => {
+  const queryConditionTitle = prompt('Please input query condition title');
+
+  if (queryConditionTitle) {
+    const queryCondition = getSearchInputElement().value;
+
+    console.log('queryConditions', queryConditions);
+
+    queryConditions.push({
+      label: queryConditionTitle,
+      value: queryCondition,
+    });
+
+    saveQueryConditions();
+    refreshSelectorOptions();
+  } else {
+    alert('Save failed :(');
+  }
 };
 
 const observer = new MutationObserver((mutations) => {
@@ -131,4 +186,6 @@ const observerOptions = {
   characterData: true,
 };
 
+let hasInitialized = false;
+const queryConditions = loadQueryConditions();
 observer.observe(document, observerOptions);
