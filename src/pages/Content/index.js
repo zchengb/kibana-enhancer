@@ -1,20 +1,20 @@
 const selectorChangeListener = () => {
   let selectedValue = getSelectorElement().value;
 
-  const params = [];
+  const params = new Set();
   const regex = /{([\w\u4e00-\u9fa5]+)}/g;
   let match;
 
   while ((match = regex.exec(selectedValue))?.length > 0) {
-    params.push(match[1]);
+    params.add(match[1]);
   }
 
-  if (params.length > 0) {
+  if (params.size > 0) {
     const userInputs = promptForInputs(params);
 
     if (userInputs) {
       params.forEach((param) => {
-        selectedValue = selectedValue.replace(`{${param}}`, userInputs[param]);
+        selectedValue = selectedValue.replaceAll(`{${param}}`, userInputs[param]);
       });
     }
   } else {
