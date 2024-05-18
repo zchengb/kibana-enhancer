@@ -1,3 +1,5 @@
+import { loadQueryConditions, saveQueryConditions } from '../store';
+
 const selectorChangeListener = () => {
   let selectedValue = getSelectorElement().value;
 
@@ -14,7 +16,10 @@ const selectorChangeListener = () => {
 
     if (userInputs) {
       params.forEach((param) => {
-        selectedValue = selectedValue.replaceAll(`{${param}}`, userInputs[param]);
+        selectedValue = selectedValue.replaceAll(
+          `{${param}}`,
+          userInputs[param]
+        );
       });
     }
   } else {
@@ -124,20 +129,6 @@ const addSaveQueryConditionButton = () => {
   }
 };
 
-const loadQueryConditions = () => {
-  const storedQueryConditions =
-    window.localStorage.getItem('queryConditions') || '[]';
-  console.log('successfully load query conditions.');
-  return JSON.parse(storedQueryConditions);
-};
-
-const saveQueryConditions = () => {
-  return window.localStorage.setItem(
-    'queryConditions',
-    JSON.stringify(queryConditions)
-  );
-};
-
 const refreshSelectorOptions = () => {
   const queryConditionSelector = getSelectorElement();
   removeAllOptionsExceptFirst(queryConditionSelector);
@@ -166,7 +157,9 @@ const saveQueryCondition = () => {
       value: queryCondition,
     });
 
-    saveQueryConditions();
+    saveQueryConditions(queryConditions).then((result) =>
+      console.log('save result:', result)
+    );
     refreshSelectorOptions();
   } else {
     alert('Save failed :(');
@@ -199,5 +192,9 @@ const observerOptions = {
 };
 
 let hasInitialized = false;
-const queryConditions = loadQueryConditions();
+let queryConditions = [];
+loadQueryConditions().then((data) => {
+  queryConditions = data;
+  console.log('successfully load query conditions.');
+});
 observer.observe(document, observerOptions);

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import type { DragEndEvent } from '@dnd-kit/core';
 import {
   DndContext,
@@ -17,6 +17,7 @@ import { CSS } from '@dnd-kit/utilities';
 import { Button, Card, Space, Table } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
 import './conditionTableView.scss';
+import { loadQueryConditions } from '../../store';
 
 interface DataType {
   key: string;
@@ -81,7 +82,7 @@ const Row = (props: RowProps) => {
 };
 
 const ConditionTableView: React.FC = () => {
-  const [dataSource, setDataSource] = useState([
+  const [conditions, setConditions] = useState([
     {
       key: '1',
       name: 'John Brown',
@@ -110,13 +111,19 @@ const ConditionTableView: React.FC = () => {
 
   const onDragEnd = ({ active, over }: DragEndEvent) => {
     if (active.id !== over?.id) {
-      setDataSource((prev) => {
+      setConditions((prev) => {
         const activeIndex = prev.findIndex((i) => i.key === active.id);
         const overIndex = prev.findIndex((i) => i.key === over?.id);
         return arrayMove(prev, activeIndex, overIndex);
       });
     }
   };
+
+  useEffect(() => {
+    loadQueryConditions().then(data => {
+      console.log(data);
+    });
+  }, []);
 
   return (
     <Card
@@ -125,7 +132,9 @@ const ConditionTableView: React.FC = () => {
       className={'conditionTableViewWrapper'}
     >
       <div className={'operationBar'}>
-        <Button type="primary" className={'addButton'}>Create</Button>
+        <Button type="primary" className={'addButton'}>
+          Create
+        </Button>
         <Button className={'importButton'}>Import in YAML</Button>
         <Button className={'exportButton'}>Export as YAML</Button>
       </div>
@@ -135,7 +144,7 @@ const ConditionTableView: React.FC = () => {
         onDragEnd={onDragEnd}
       >
         <SortableContext
-          items={dataSource.map((i) => i.key)}
+          items={conditions.map((i) => i.key)}
           strategy={verticalListSortingStrategy}
         >
           <Table
@@ -146,7 +155,7 @@ const ConditionTableView: React.FC = () => {
             }}
             rowKey="key"
             columns={columns}
-            dataSource={dataSource}
+            dataSource={conditions}
           />
         </SortableContext>
       </DndContext>
