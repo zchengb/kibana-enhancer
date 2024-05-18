@@ -2,7 +2,7 @@ const selectorChangeListener = () => {
   let selectedValue = getSelectorElement().value;
 
   const params = [];
-  const regex = /{(\w+)}/g;
+  const regex = /{([\w\u4e00-\u9fa5]+)}/g;
   let match;
 
   while ((match = regex.exec(selectedValue))?.length > 0) {
@@ -43,7 +43,7 @@ const injectQuerySelectorOptions = (selectorElement) => {
   });
 };
 
-const addInputSelector = () => {
+const addConditionSelector = () => {
   const queryContainer = getQueryFilterBarElement();
 
   if (queryContainer) {
@@ -185,7 +185,7 @@ const addEventListenerOnSearchInput = () => {
 
 const observer = new MutationObserver((mutations) => {
   if (isDiscoverPage() && !hasInitialized) {
-    addInputSelector();
+    addConditionSelector();
     addSaveQueryConditionButton();
     addEventListenerOnSearchInput();
   }
