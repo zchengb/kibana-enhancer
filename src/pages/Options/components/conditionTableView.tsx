@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from "react";
 import type { DragEndEvent } from '@dnd-kit/core';
 import {
   DndContext,
@@ -14,37 +14,20 @@ import {
   verticalListSortingStrategy,
 } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
-import { Button, Card, Space, Table } from 'antd';
+import { Button, Card, Popconfirm, Space, Table } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
 import './conditionTableView.scss';
-import { loadQueryConditions, QueryCondition } from '../../store';
+import {
+  loadQueryConditions,
+  QueryCondition,
+  saveQueryConditions,
+} from '../../store';
 
 interface ConditionTemplate {
   key: string;
   label: string;
   value: string;
 }
-
-const columns: ColumnsType<ConditionTemplate> = [
-  {
-    title: 'Title',
-    dataIndex: 'label',
-  },
-  {
-    title: 'Template',
-    dataIndex: 'value',
-  },
-  {
-    title: 'Action',
-    key: 'action',
-    render: (_, record) => (
-      <Space size="middle">
-        <a>Edit</a>
-        <a>Delete</a>
-      </Space>
-    ),
-  },
-];
 
 interface RowProps extends React.HTMLAttributes<HTMLTableRowElement> {
   'data-row-key': string;
@@ -83,6 +66,66 @@ const Row = (props: RowProps) => {
 
 const ConditionTableView: React.FC = () => {
   const [conditions, setConditions] = useState<ConditionTemplate[]>([]);
+  const isInitialMount = useRef(true);
+
+  useEffect(() => {
+    loadQueryConditions().then((data: QueryCondition[]) => {
+      setConditions(
+        data.map((option: QueryCondition, index: number) => {
+          return {
+            key: (index + 1).toString(),
+            ...option,
+          };
+        })
+      );
+      isInitialMount.current = true;
+    });
+  }, []);
+
+  useEffect(() => {
+    if (isInitialMount.current) {
+      isInitialMount.current = false;
+    } else {
+      console.log('conditions changed!');
+      saveQueryConditions(
+        conditions.map((condition: ConditionTemplate) => ({
+          label: condition.label,
+          value: condition.value,
+        }))
+      ).then((result) => console.log('save query condition result:', result));
+    }
+  }, [conditions]);
+
+  const columns: ColumnsType<ConditionTemplate> = [
+    {
+      title: 'Title',
+      dataIndex: 'label',
+    },
+    {
+      title: 'Template',
+      dataIndex: 'value',
+    },
+    {
+      title: 'Action',
+      key: 'action',
+      render: (_, record) => (
+        <Space size="middle">
+          <a>Edit</a>
+          <Popconfirm
+            title="Sure to delete?"
+            onConfirm={() => handleDelete(record.key)}
+          >
+            <a>Delete</a>
+          </Popconfirm>
+        </Space>
+      ),
+    },
+  ];
+
+  const handleDelete = (key: string) => {
+    const conditionTemplates = conditions.filter((item) => item.key !== key);
+    setConditions(conditionTemplates);
+  };
 
   const sensors = useSensors(
     useSensor(PointerSensor, {
@@ -101,19 +144,6 @@ const ConditionTableView: React.FC = () => {
       });
     }
   };
-
-  useEffect(() => {
-    loadQueryConditions().then((data: QueryCondition[]) => {
-      setConditions(
-        data.map((option: QueryCondition, index: number) => {
-          return {
-            key: (index + 1).toString(),
-            ...option,
-          };
-        })
-      );
-    });
-  }, []);
 
   return (
     <Card
