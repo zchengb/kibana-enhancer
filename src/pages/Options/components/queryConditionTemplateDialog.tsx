@@ -6,7 +6,7 @@ import './queryConditionTemplateDialog.scss';
 interface QueryConditionTemplateDialogProps {
   title: string;
   isModalOpen: boolean;
-  handleOk: () => void;
+  handleOk: (conditionTemplate: any) => void;
   handleCancel: () => void;
 }
 
@@ -17,6 +17,11 @@ const QueryConditionTemplateDialog: React.FC<
     title?: string;
     template?: string;
   };
+
+  const onFinish: FormProps<FieldType>['onFinish'] = (formValue) => {
+    handleOk({ label: formValue.title, value: formValue.template });
+  };
+
   const onFinishFailed: FormProps<FieldType>['onFinishFailed'] = (
     errorInfo
   ) => {
@@ -55,7 +60,7 @@ const QueryConditionTemplateDialog: React.FC<
     >
       <Form
         name="basic"
-        onFinish={handleOk}
+        onFinish={onFinish}
         onFinishFailed={onFinishFailed}
         autoComplete="off"
         className={'conditionTemplateForm'}

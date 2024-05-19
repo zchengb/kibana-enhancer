@@ -14,7 +14,7 @@ import {
   verticalListSortingStrategy,
 } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
-import { Button, Card, Popconfirm, Space, Table } from 'antd';
+import { Button, Card, message, Popconfirm, Space, Table } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
 import './conditionTableView.scss';
 import {
@@ -67,8 +67,9 @@ const Row = (props: RowProps) => {
 
 const ConditionTableView: React.FC = () => {
   const [conditions, setConditions] = useState<ConditionTemplate[]>([]);
-  const [creatDialogVisible, setCreatDialogVisible] = useState<boolean>(true);
+  const [creatDialogVisible, setCreatDialogVisible] = useState<boolean>(false);
   const isInitialMount = useRef(true);
+  const [messageApi, contextHolder] = message.useMessage();
 
   useEffect(() => {
     loadQueryConditions().then((data: QueryCondition[]) => {
@@ -129,6 +130,23 @@ const ConditionTableView: React.FC = () => {
     setConditions(conditionTemplates);
   };
 
+  const handleCreate = (template: any) => {
+    const newConditions = [
+      ...conditions,
+      {
+        key: (conditions.length + 1).toString(),
+        label: template.label,
+        value: template.value,
+      }
+    ];
+    setConditions(newConditions);
+    setCreatDialogVisible(false);
+    messageApi.open({
+      type: 'success',
+      content: 'Template save successfully :)',
+    });
+  };
+
   const sensors = useSensors(
     useSensor(PointerSensor, {
       activationConstraint: {
@@ -148,46 +166,53 @@ const ConditionTableView: React.FC = () => {
   };
 
   return (
-    <Card
-      title="🌈 Condition Template"
-      bordered={false}
-      className={'conditionTableViewWrapper'}
-    >
-      <div className={'operationBar'}>
-        <Button type="primary" className={'addButton'} onClick={() => setCreatDialogVisible(true)}>
-          Create
-        </Button>
-        <Button className={'importButton'}>Import in YAML</Button>
-        <Button className={'exportButton'}>Export as YAML</Button>
-      </div>
-      <DndContext
-        sensors={sensors}
-        modifiers={[restrictToVerticalAxis]}
-        onDragEnd={onDragEnd}
+    <>
+      {contextHolder}
+      <Card
+        title="🌈 Condition Template"
+        bordered={false}
+        className={'conditionTableViewWrapper'}
       >
-        <SortableContext
-          items={conditions.map((i) => i.key)}
-          strategy={verticalListSortingStrategy}
+        <div className={'operationBar'}>
+          <Button
+            type="primary"
+            className={'addButton'}
+            onClick={() => setCreatDialogVisible(true)}
+          >
+            Create
+          </Button>
+          <Button className={'importButton'}>Import in YAML</Button>
+          <Button className={'exportButton'}>Export as YAML</Button>
+        </div>
+        <DndContext
+          sensors={sensors}
+          modifiers={[restrictToVerticalAxis]}
+          onDragEnd={onDragEnd}
         >
-          <Table
-            components={{
-              body: {
-                row: Row,
-              },
-            }}
-            rowKey="key"
-            columns={columns}
-            dataSource={conditions}
-          />
-        </SortableContext>
-      </DndContext>
-      <QueryConditionTemplateDialog
-        title={'Create Condition Template'}
-        isModalOpen={creatDialogVisible}
-        handleOk={() => setCreatDialogVisible(false)}
-        handleCancel={() => setCreatDialogVisible(false)}
-      />
-    </Card>
+          <SortableContext
+            items={conditions.map((i) => i.key)}
+            strategy={verticalListSortingStrategy}
+          >
+            <Table
+              components={{
+                body: {
+                  row: Row,
+                },
+              }}
+              rowKey="key"
+              columns={columns}
+              dataSource={conditions}
+            />
+          </SortableContext>
+        </DndContext>
+        <QueryConditionTemplateDialog
+          title={'Create Condition Template'}
+          isModalOpen={creatDialogVisible}
+          handleOk={handleCreate}
+          handleCancel={() => setCreatDialogVisible(false)}
+        />
+      </Card>
+    </>
   );
 };
 
