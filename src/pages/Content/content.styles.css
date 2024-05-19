@@ -14,11 +14,6 @@
     border: #D2D9E8 1px solid !important;
 }
 
-.queryCondition option:first-child {
-    display: none;
-    color: #68717D;
-}
-
 .saveConditionButton {
     color: #0071c2;
     font-size: 14px;

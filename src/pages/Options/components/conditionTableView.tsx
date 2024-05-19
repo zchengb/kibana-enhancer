@@ -207,6 +207,7 @@ const ConditionTableView: React.FC = () => {
     if (!confirmImport) return;
 
     try {
+      // @ts-ignore
       const { conditionTemplates } = yaml.load(yamlString);
       if (Array.isArray(conditionTemplates)) {
         const newConditions = conditionTemplates.map((template, index) => ({
