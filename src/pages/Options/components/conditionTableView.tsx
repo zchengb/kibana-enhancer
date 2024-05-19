@@ -6,6 +6,7 @@ import {
   useSensor,
   useSensors,
 } from '@dnd-kit/core';
+import * as yaml from 'js-yaml';
 import { restrictToVerticalAxis } from '@dnd-kit/modifiers';
 import {
   arrayMove,
@@ -199,6 +200,86 @@ const ConditionTableView: React.FC = () => {
     }
   };
 
+  const importConditionsFromYaml = (yamlString: string) => {
+    const confirmImport = window.confirm(
+      'Are you sure you want to import conditions? \n\n !!! This will overwrite existing data !!!'
+    );
+    if (!confirmImport) return;
+
+    try {
+      const { conditionTemplates } = yaml.load(yamlString);
+      if (Array.isArray(conditionTemplates)) {
+        const newConditions = conditionTemplates.map((template, index) => ({
+          key: (index + 1).toString(),
+          label: template.label,
+          value: template.value,
+        }));
+        setConditions(newConditions);
+        messageApi.open({
+          type: 'success',
+          content: 'Conditions imported successfully!',
+        });
+      } else {
+        messageApi.open({
+          type: 'error',
+          content: 'Invalid YAML format: conditionTemplates not found.',
+        });
+      }
+    } catch (error) {
+      console.error('Error importing conditions from YAML:', error);
+      messageApi.open({
+        type: 'error',
+        content: 'Failed to import conditions from YAML.',
+      });
+    }
+  };
+
+  const handleUpload = (event: any) => {
+    const file = event.target.files[0];
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      // @ts-ignore
+      const yamlString = event.target.result;
+      // @ts-ignore
+      importConditionsFromYaml(yamlString);
+    };
+    reader.readAsText(file);
+  };
+
+  const exportConditionsToYaml = () => {
+    if (conditions.length === 0) {
+      messageApi.open({
+        type: 'warning',
+        content: 'There are no conditions to export.',
+      });
+      return;
+    }
+
+    const conditionsToExport = conditions.map(({ key, ...rest }) => rest);
+    const yamlString = yaml.dump({ conditionTemplates: conditionsToExport });
+    const element = document.createElement('a');
+    element.setAttribute(
+      'href',
+      'data:text/yaml;charset=utf-8,' + encodeURIComponent(yamlString)
+    );
+    element.setAttribute('download', 'conditions.yaml');
+    document.body.appendChild(element);
+    element.click();
+    document.body.removeChild(element);
+    messageApi.open({
+      type: 'success',
+      content: 'Conditions exported successfully :)',
+    });
+  };
+
+  const handleExport = () => {
+    exportConditionsToYaml();
+  };
+
+  const openFileUploader = () => {
+    document.getElementById('fileInput')?.click();
+  };
+
   return (
     <>
       {contextHolder}
@@ -215,8 +296,19 @@ const ConditionTableView: React.FC = () => {
           >
             Create
           </Button>
-          <Button className={'importButton'}>Import in YAML</Button>
-          <Button className={'exportButton'}>Export as YAML</Button>
+          <Button className={'importButton'} onClick={openFileUploader}>
+            Import in YAML
+            <input
+              type="file"
+              id={'fileInput'}
+              accept=".yaml,.yml"
+              onChange={handleUpload}
+              style={{ display: 'none' }}
+            />
+          </Button>
+          <Button className={'exportButton'} onClick={handleExport}>
+            Export as YAML
+          </Button>
         </div>
         <DndContext
           sensors={sensors}
