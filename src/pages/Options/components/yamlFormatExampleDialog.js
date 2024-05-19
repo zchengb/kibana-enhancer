@@ -4,15 +4,7 @@ import './queryConditionTemplateDialog.scss';
 import SyntaxHighlighter from 'react-syntax-highlighter';
 import { docco } from 'react-syntax-highlighter/dist/esm/styles/hljs';
 
-interface YamlFormatExampleDialogProps {
-  isModalOpen: boolean;
-  handleCancel: () => void;
-}
-
-const YamlFormatExampleDialog: React.FC<YamlFormatExampleDialogProps> = ({
-  isModalOpen,
-  handleCancel,
-}) => {
+const YamlFormatExampleDialog = ({ isModalOpen, handleCancel }) => {
   return (
     <Modal
       title="YAML Format Example"

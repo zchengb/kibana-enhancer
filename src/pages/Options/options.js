@@ -2,7 +2,7 @@ import React from 'react';
 import './option.scss';
 import ConditionTableView from './components/conditionTableView';
 
-const Options: React.FC = () => {
+const Options = () => {
   return (
     <div className="optionsContainer">
       <header className="header">

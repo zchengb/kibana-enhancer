@@ -1,14 +1,9 @@
-export interface QueryCondition {
-  label: string;
-  value: string;
-}
-
-export const loadQueryConditions = (): Promise<QueryCondition[]> => {
+export const loadQueryConditions = () => {
   return new Promise((resolve, reject) => {
-    chrome.storage.local.get(['queryConditions'], (result) => {
+    chrome.storage.local.get(["queryConditions"], (result) => {
       if (chrome.runtime.lastError) {
         console.error(
-          'Error retrieving query conditions:',
+          "Error retrieving query conditions:",
           chrome.runtime.lastError
         );
         reject(chrome.runtime.lastError);
@@ -20,17 +15,17 @@ export const loadQueryConditions = (): Promise<QueryCondition[]> => {
   });
 };
 
-export const saveQueryConditions = (queryConditions: QueryCondition[]) => {
+export const saveQueryConditions = (queryConditions) => {
   return new Promise((resolve, reject) => {
     chrome.storage.local.set({ queryConditions }, () => {
       if (chrome.runtime.lastError) {
         console.error(
-          'Error saving query conditions:',
+          "Error saving query conditions:",
           chrome.runtime.lastError
         );
         reject(chrome.runtime.lastError);
       } else {
-        console.log('Successfully saved query conditions.');
+        console.log("Successfully saved query conditions.");
         resolve(true);
       }
     });
