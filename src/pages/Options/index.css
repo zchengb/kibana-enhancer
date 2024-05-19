@@ -7,3 +7,9 @@ body {
     text-rendering: optimizeLegibility;
     background-color: #FAFAFA;
 }
+
+html, body {
+    width: 100% !important;
+    overflow: auto;
+    scrollbar-width: none;
+}
