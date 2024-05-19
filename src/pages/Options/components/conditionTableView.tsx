@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from 'react';
 import type { DragEndEvent } from '@dnd-kit/core';
 import {
   DndContext,
@@ -22,6 +22,7 @@ import {
   QueryCondition,
   saveQueryConditions,
 } from '../../store';
+import QueryConditionTemplateDialog from './queryConditionTemplateDialog';
 
 interface ConditionTemplate {
   key: string;
@@ -66,6 +67,7 @@ const Row = (props: RowProps) => {
 
 const ConditionTableView: React.FC = () => {
   const [conditions, setConditions] = useState<ConditionTemplate[]>([]);
+  const [creatDialogVisible, setCreatDialogVisible] = useState<boolean>(true);
   const isInitialMount = useRef(true);
 
   useEffect(() => {
@@ -152,7 +154,7 @@ const ConditionTableView: React.FC = () => {
       className={'conditionTableViewWrapper'}
     >
       <div className={'operationBar'}>
-        <Button type="primary" className={'addButton'}>
+        <Button type="primary" className={'addButton'} onClick={() => setCreatDialogVisible(true)}>
           Create
         </Button>
         <Button className={'importButton'}>Import in YAML</Button>
@@ -179,6 +181,12 @@ const ConditionTableView: React.FC = () => {
           />
         </SortableContext>
       </DndContext>
+      <QueryConditionTemplateDialog
+        title={'Create Condition Template'}
+        isModalOpen={creatDialogVisible}
+        handleOk={() => setCreatDialogVisible(false)}
+        handleCancel={() => setCreatDialogVisible(false)}
+      />
     </Card>
   );
 };

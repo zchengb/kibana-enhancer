@@ -1,0 +1,25 @@
+.conditionTemplateForm {
+  height: 100%;
+  width: 470px;
+  margin-top: 24px;
+  padding-right: 14px;
+
+  .ant-form-item-label {
+    width: 85px;
+  }
+
+  .operationBar {
+    margin-bottom: 8px;
+    margin-top: 32px;
+
+    .ant-form-item-row {
+      width: 100%;
+    }
+
+    .ant-form-item-control-input-content {
+      display: flex;
+      gap: 12px;
+      justify-content: end;
+    }
+  }
+}
