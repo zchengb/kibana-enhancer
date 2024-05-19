@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect } from 'react';
 import { Button, Form, FormProps, Input, Modal } from 'antd';
 import TextArea from 'antd/es/input/TextArea';
 import './queryConditionTemplateDialog.scss';
@@ -16,13 +16,10 @@ const QueryConditionTemplateDialog: React.FC<
   QueryConditionTemplateDialogProps
 > = ({ title, editTemplate, isModalOpen, handleOk, handleCancel }) => {
   const [form] = Form.useForm();
-  const [initialValues, setInitialValues] = useState<
-    ConditionTemplate | undefined
-  >(undefined);
 
   useEffect(() => {
     if (editTemplate) {
-      setInitialValues(editTemplate);
+      form.setFieldsValue(editTemplate);
     }
   }, [editTemplate]);
 
@@ -60,6 +57,10 @@ const QueryConditionTemplateDialog: React.FC<
     }
   };
 
+  const resetFields = () => {
+    form.resetFields();
+  };
+
   return (
     <Modal
       title={title}
@@ -69,12 +70,12 @@ const QueryConditionTemplateDialog: React.FC<
       onCancel={handleCancel}
       footer={null}
       destroyOnClose={true}
+      afterClose={resetFields}
     >
       <Form
         name="basic"
         form={form}
         onFinish={onFinish}
-        initialValues={initialValues}
         onFinishFailed={onFinishFailed}
         autoComplete="off"
         className={'conditionTemplateForm'}
