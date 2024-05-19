@@ -17,22 +17,22 @@ import { CSS } from '@dnd-kit/utilities';
 import { Button, Card, Space, Table } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
 import './conditionTableView.scss';
-import { loadQueryConditions } from '../../store';
+import { loadQueryConditions, QueryCondition } from '../../store';
 
-interface DataType {
+interface ConditionTemplate {
   key: string;
-  name: string;
-  address: string;
+  label: string;
+  value: string;
 }
 
-const columns: ColumnsType<DataType> = [
+const columns: ColumnsType<ConditionTemplate> = [
   {
     title: 'Title',
-    dataIndex: 'name',
+    dataIndex: 'label',
   },
   {
     title: 'Template',
-    dataIndex: 'address',
+    dataIndex: 'value',
   },
   {
     title: 'Action',
@@ -82,24 +82,7 @@ const Row = (props: RowProps) => {
 };
 
 const ConditionTableView: React.FC = () => {
-  const [conditions, setConditions] = useState([
-    {
-      key: '1',
-      name: 'John Brown',
-      address:
-        'Long text Long text Long text Long text Long text Long text Long text Long text Long text Long text Long text Long text Long text Long text Long text Long text Long text Long text Long text Long text Long text Long text Long text Long text Long text Long text Long text Long text Long text Long text Long text Long text',
-    },
-    {
-      key: '2',
-      name: 'Jim Green',
-      address: 'London No. 1 Lake Park',
-    },
-    {
-      key: '3',
-      name: 'Joe Black',
-      address: 'Sidney No. 1 Lake Park',
-    },
-  ]);
+  const [conditions, setConditions] = useState<ConditionTemplate[]>([]);
 
   const sensors = useSensors(
     useSensor(PointerSensor, {
@@ -120,8 +103,15 @@ const ConditionTableView: React.FC = () => {
   };
 
   useEffect(() => {
-    loadQueryConditions().then(data => {
-      console.log(data);
+    loadQueryConditions().then((data: QueryCondition[]) => {
+      setConditions(
+        data.map((option: QueryCondition, index: number) => {
+          return {
+            key: (index + 1).toString(),
+            ...option,
+          };
+        })
+      );
     });
   }, []);
 

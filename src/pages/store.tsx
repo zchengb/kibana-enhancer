@@ -1,4 +1,9 @@
-export const loadQueryConditions = () => {
+export interface QueryCondition {
+  label: string;
+  value: string;
+}
+
+export const loadQueryConditions = (): Promise<QueryCondition[]> => {
   return new Promise((resolve, reject) => {
     chrome.storage.local.get(['queryConditions'], (result) => {
       if (chrome.runtime.lastError) {
@@ -15,7 +20,7 @@ export const loadQueryConditions = () => {
   });
 };
 
-export const saveQueryConditions = (queryConditions: any) => {
+export const saveQueryConditions = (queryConditions: QueryCondition[]) => {
   return new Promise((resolve, reject) => {
     chrome.storage.local.set({ queryConditions }, () => {
       if (chrome.runtime.lastError) {
