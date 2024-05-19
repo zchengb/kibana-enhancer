@@ -236,7 +236,7 @@ const ConditionTableView: React.FC = () => {
               rowKey="key"
               columns={columns}
               dataSource={conditions}
-              pagination={{ pageSize: 100 }}
+              pagination={false}
             />
           </SortableContext>
         </DndContext>
