@@ -311,6 +311,7 @@ const ConditionTableView: React.FC = () => {
         bordered={false}
         className={"conditionTableViewWrapper"}
       >
+        <div className={"operationTips"}>Click button to Create, Import and Export templates (YAML) :</div>
         <div className={"operationBar"}>
           <Button
             type="primary"
@@ -320,7 +321,7 @@ const ConditionTableView: React.FC = () => {
             Create
           </Button>
           <Button className={"importButton"} onClick={openFileUploader}>
-            Import in YAML
+            Import
             <input
               type="file"
               id={"fileInput"}
@@ -330,7 +331,7 @@ const ConditionTableView: React.FC = () => {
             />
           </Button>
           <Button className={"exportButton"} onClick={handleExport}>
-            Export as YAML
+            Export
           </Button>
           <a className={"tooltip"} onClick={() => showYAMLExample()}>
             <QuestionCircleOutlined />

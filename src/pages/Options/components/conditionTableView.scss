@@ -1,6 +1,12 @@
 .conditionTableViewWrapper {
   width: 100%;
 
+  .operationTips {
+    font-style: italic;
+    color: rgba(0, 0, 0, 0.5);
+    margin-bottom: 12px;
+  }
+
   .operationBar {
     display: flex;
     margin-bottom: 24px;
@@ -11,6 +17,10 @@
       display: flex;
       gap: 4px;
     }
+  }
+
+  .ant-card-body {
+    padding-top: 16px;
   }
 
   .variable {
