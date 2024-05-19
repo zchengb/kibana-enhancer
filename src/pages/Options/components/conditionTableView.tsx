@@ -24,7 +24,7 @@ import {
 } from '../../store';
 import QueryConditionTemplateDialog from './queryConditionTemplateDialog';
 
-interface ConditionTemplate {
+export interface ConditionTemplate {
   key: string;
   label: string;
   value: string;
@@ -68,6 +68,9 @@ const Row = (props: RowProps) => {
 const ConditionTableView: React.FC = () => {
   const [conditions, setConditions] = useState<ConditionTemplate[]>([]);
   const [creatDialogVisible, setCreatDialogVisible] = useState<boolean>(false);
+  const [editDialogVisible, setEditDialogVisible] = useState<boolean>(false);
+  const [editingConditionTemplate, setEditingConditionTemplate] =
+    useState<ConditionTemplate>();
   const isInitialMount = useRef(true);
   const [messageApi, contextHolder] = message.useMessage();
 
@@ -113,7 +116,14 @@ const ConditionTableView: React.FC = () => {
       key: 'action',
       render: (_, record) => (
         <Space size="middle">
-          <a>Edit</a>
+          <a
+            onClick={() => {
+              setEditDialogVisible(true);
+              setEditingConditionTemplate(record);
+            }}
+          >
+            Edit
+          </a>
           <Popconfirm
             title="Sure to delete?"
             onConfirm={() => handleDelete(record.key)}
@@ -137,7 +147,7 @@ const ConditionTableView: React.FC = () => {
         key: (conditions.length + 1).toString(),
         label: template.label,
         value: template.value,
-      }
+      },
     ];
     setConditions(newConditions);
     setCreatDialogVisible(false);
@@ -145,6 +155,30 @@ const ConditionTableView: React.FC = () => {
       type: 'success',
       content: 'Template save successfully :)',
     });
+  };
+
+  const handleEdit = (editedTemplate: ConditionTemplate) => {
+    const editedIndex = conditions.findIndex(
+      (item) => item.key === editedTemplate.key
+    );
+
+    if (editedIndex !== -1) {
+      const updatedConditions = [...conditions];
+      updatedConditions[editedIndex] = editedTemplate;
+      setConditions(updatedConditions);
+      setEditDialogVisible(false);
+      messageApi.open({
+        type: 'success',
+        content: 'Template edited successfully :)',
+      });
+    } else {
+      messageApi.open({
+        type: 'error',
+        content: 'Unable to find template for editing :(',
+      });
+    }
+
+    setEditingConditionTemplate(undefined);
   };
 
   const sensors = useSensors(
@@ -205,11 +239,20 @@ const ConditionTableView: React.FC = () => {
             />
           </SortableContext>
         </DndContext>
+
         <QueryConditionTemplateDialog
           title={'Create Condition Template'}
           isModalOpen={creatDialogVisible}
           handleOk={handleCreate}
           handleCancel={() => setCreatDialogVisible(false)}
+        />
+
+        <QueryConditionTemplateDialog
+          title={'Edit Condition Template'}
+          editTemplate={editingConditionTemplate}
+          isModalOpen={editDialogVisible}
+          handleOk={handleEdit}
+          handleCancel={() => setEditDialogVisible(false)}
         />
       </Card>
     </>

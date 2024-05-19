@@ -1,10 +1,12 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Button, Form, FormProps, Input, Modal } from 'antd';
 import TextArea from 'antd/es/input/TextArea';
 import './queryConditionTemplateDialog.scss';
+import { ConditionTemplate } from './conditionTableView';
 
 interface QueryConditionTemplateDialogProps {
   title: string;
+  editTemplate?: ConditionTemplate;
   isModalOpen: boolean;
   handleOk: (conditionTemplate: any) => void;
   handleCancel: () => void;
@@ -12,17 +14,27 @@ interface QueryConditionTemplateDialogProps {
 
 const QueryConditionTemplateDialog: React.FC<
   QueryConditionTemplateDialogProps
-> = ({ title, isModalOpen, handleOk, handleCancel }) => {
-  type FieldType = {
-    title?: string;
-    template?: string;
+> = ({ title, editTemplate, isModalOpen, handleOk, handleCancel }) => {
+  const [form] = Form.useForm();
+  const [initialValues, setInitialValues] = useState<
+    ConditionTemplate | undefined
+  >(undefined);
+
+  useEffect(() => {
+    if (editTemplate) {
+      setInitialValues(editTemplate);
+    }
+  }, [editTemplate]);
+
+  const onFinish: FormProps<ConditionTemplate>['onFinish'] = (formValue) => {
+    handleOk({
+      key: editTemplate?.key,
+      label: formValue.label,
+      value: formValue.value,
+    });
   };
 
-  const onFinish: FormProps<FieldType>['onFinish'] = (formValue) => {
-    handleOk({ label: formValue.title, value: formValue.template });
-  };
-
-  const onFinishFailed: FormProps<FieldType>['onFinishFailed'] = (
+  const onFinishFailed: FormProps<ConditionTemplate>['onFinishFailed'] = (
     errorInfo
   ) => {
     console.log('Failed:', errorInfo);
@@ -60,22 +72,24 @@ const QueryConditionTemplateDialog: React.FC<
     >
       <Form
         name="basic"
+        form={form}
         onFinish={onFinish}
+        initialValues={initialValues}
         onFinishFailed={onFinishFailed}
         autoComplete="off"
         className={'conditionTemplateForm'}
       >
-        <Form.Item<FieldType>
+        <Form.Item<ConditionTemplate>
           label="Title"
-          name="title"
+          name="label"
           rules={[{ required: true, validator: validateTitle }]}
         >
           <Input showCount maxLength={32} />
         </Form.Item>
 
-        <Form.Item<FieldType>
+        <Form.Item<ConditionTemplate>
           label="Template"
-          name="template"
+          name="value"
           rules={[{ required: true, validator: validateTemplate }]}
         >
           <TextArea rows={3} showCount maxLength={1000} />
