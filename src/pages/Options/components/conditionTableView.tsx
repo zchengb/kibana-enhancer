@@ -24,6 +24,8 @@ import {
   saveQueryConditions,
 } from '../../store';
 import QueryConditionTemplateDialog from './queryConditionTemplateDialog';
+import { QuestionCircleOutlined } from '@ant-design/icons';
+import YamlFormatExampleDialog from './yamlFormatExampleDialog';
 
 export interface ConditionTemplate {
   key: string;
@@ -74,6 +76,7 @@ const ConditionTableView: React.FC = () => {
     useState<ConditionTemplate>();
   const isInitialMount = useRef(true);
   const [messageApi, contextHolder] = message.useMessage();
+  const [yamlExampleVisible, setYamlExampleVisible] = useState(false);
 
   useEffect(() => {
     loadQueryConditions().then((data: QueryCondition[]) => {
@@ -281,6 +284,14 @@ const ConditionTableView: React.FC = () => {
     document.getElementById('fileInput')?.click();
   };
 
+  const showYAMLExample = () => {
+    setYamlExampleVisible(true);
+  };
+
+  const hideYAMLExample = () => {
+    setYamlExampleVisible(false);
+  };
+
   return (
     <>
       {contextHolder}
@@ -310,6 +321,10 @@ const ConditionTableView: React.FC = () => {
           <Button className={'exportButton'} onClick={handleExport}>
             Export as YAML
           </Button>
+          <a className={'tooltip'} onClick={() => showYAMLExample()}>
+            <QuestionCircleOutlined />
+            YAML format example
+          </a>
         </div>
         <DndContext
           sensors={sensors}
@@ -347,6 +362,11 @@ const ConditionTableView: React.FC = () => {
           isModalOpen={editDialogVisible}
           handleOk={handleEdit}
           handleCancel={() => setEditDialogVisible(false)}
+        />
+
+        <YamlFormatExampleDialog
+          isModalOpen={yamlExampleVisible}
+          handleCancel={hideYAMLExample}
         />
       </Card>
     </>

@@ -5,5 +5,11 @@
     display: flex;
     margin-bottom: 24px;
     gap: 12px;
+    align-items: center;
+
+    .tooltip {
+      display: flex;
+      gap: 4px;
+    }
   }
 }
