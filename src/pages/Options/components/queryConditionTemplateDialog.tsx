@@ -3,6 +3,7 @@ import { Button, Form, FormProps, Input, Modal } from 'antd';
 import TextArea from 'antd/es/input/TextArea';
 import './queryConditionTemplateDialog.scss';
 import { ConditionTemplate } from './conditionTableView';
+import * as DOMPurify from "dompurify";
 
 interface QueryConditionTemplateDialogProps {
   title: string;
@@ -27,7 +28,7 @@ const QueryConditionTemplateDialog: React.FC<
     handleOk({
       key: editTemplate?.key,
       label: formValue.label,
-      value: formValue.value,
+      value: DOMPurify.sanitize(formValue.value,  { USE_PROFILES: { html: false } }),
     });
   };
 
