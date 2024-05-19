@@ -8,7 +8,9 @@
     top: 0;
     z-index: 1;
     align-items: center;
-    background-color: #fff;
+    background: hsla(0, 0%, 98%, .6);
+    -webkit-backdrop-filter: blur(4px);
+    backdrop-filter: blur(4px);
     width: 100%;
     box-shadow: 0 2px 6px #d2d0ce;
     height: 56px;
