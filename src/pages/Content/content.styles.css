@@ -1,17 +1,22 @@
+#queryConditionSelector {
+    box-sizing: border-box;
+    margin: 4px;
+}
+
 .queryCondition {
     border-radius: 6px;
-    font-size: 14px;
-    color: #343741;
-    width: 210px;
-    padding: 0 12px;
-    margin: 4px;
-    background: #FBFCFD url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 16 16' class='euiIcon euiIcon--medium euiIcon--inherit euiIcon-isLoaded euiButtonContent__icon' focusable='false' role='' aria-hidden='true'>  <path fill-rule='nonzero' d='M13.069 5.157L8.384 9.768a.546.546 0 01-.768 0L2.93 5.158a.552.552 0 00-.771 0 .53.53 0 000 .759l4.684 4.61c.641.631 1.672.63 2.312 0l4.684-4.61a.53.53 0 000-.76.552.552 0 00-.771 0z'></path></svg>") no-repeat;
-    background-position: calc(100% - 0.75rem) center !important;
-    -moz-appearance: none;
-    -webkit-appearance: none;
-    appearance: none;
+    font-size: 14px !important;
+    color: #343741 !important;
+    width: 210px !important;
+    height: 100% !important;
+}
+
+.ant-select-selection-search-input {
     outline: none !important;
-    border: #D2D9E8 1px solid !important;
+}
+
+.ant-select-selection-placeholder {
+    color: #68717D;
 }
 
 .saveConditionButton {
@@ -25,6 +30,10 @@
     width: 140px;
     cursor: pointer;
     box-sizing: border-box;
+}
+
+.saveConditionText {
+    white-space: nowrap;
 }
 
 .saveConditionText:hover {
