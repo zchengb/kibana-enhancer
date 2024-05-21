@@ -23,8 +23,10 @@ const decodeHTMLEntities = (text) => {
 };
 
 const formatTableContent = () => {
-  const tableCells = document.querySelectorAll('.truncate-by-height:not([data-formatted="true"])');
-  console.log('formatTableContent start:', tableCells.length);
+  const tableCells = document.querySelectorAll(
+    '.truncate-by-height:not([data-formatted="true"])'
+  );
+  console.log('start formatting table content with size:', tableCells.length);
   tableCells.forEach((cell) => {
     cell.innerHTML = DOMPurify.sanitize(decodeHTMLEntities(cell.innerHTML));
     cell.setAttribute('data-formatted', 'true');
@@ -109,7 +111,12 @@ const addConditionSelector = () => {
     queryContainer.insertBefore(selectContainer, queryContainer.lastChild);
 
     ReactDOM.render(<ConditionSelector />, selectContainer);
-    hasInitialized = true;
+    setInterval(() => {
+      const selectorInputElement = document.querySelector(
+        '.ant-select-selection-search-input'
+      );
+      selectorInputElement.style.setProperty('animation', 'none', 'important');
+    }, 1000);
     console.log('successfully inject input selector.');
   }
 };
@@ -187,6 +194,7 @@ const saveQueryCondition = () => {
     return;
   }
 
+  loadQueryConditionTemplates();
   const queryConditionTitle = prompt('Please input query condition title');
 
   if (queryConditionTitle) {
@@ -221,25 +229,32 @@ const getTableElement = () => {
   return document.querySelector('.kbn-table.table');
 };
 
+const getSaveConditionButtonElement = () => {
+  return document.getElementById('saveConditionButton');
+};
+
+const addHookOnLogTable = () => {
+  const tableElement = getTableElement();
+  if (tableElement) {
+    logTableObserver.observe(tableElement, {
+      childList: true,
+      subtree: true,
+      attributes: false,
+      characterData: false,
+    });
+    console.log('Successfully add format hook on log table');
+  }
+};
+
 const rootObserver = new MutationObserver((mutations) => {
-  if (isDiscoverPage() && !hasInitialized) {
+  if (
+    isDiscoverPage() &&
+    (!getSelectorElement() || !getSaveConditionButtonElement())
+  ) {
     addConditionSelector();
     addSaveQueryConditionButton();
     addEventListenerOnSearchInput();
-  }
-
-  if (isDiscoverPage() && !addHookOnLogTable) {
-    const tableElement = getTableElement();
-    if (tableElement) {
-      logTableObserver.observe(tableElement, {
-        childList: true,
-        subtree: true,
-        attributes: false,
-        characterData: false,
-      });
-      addHookOnLogTable = true;
-      console.log('Successfully add format hook on log table');
-    }
+    addHookOnLogTable();
   }
 });
 
@@ -263,11 +278,14 @@ const rootObserverOptions = {
   characterData: true,
 };
 
-let hasInitialized = false;
-let addHookOnLogTable = false;
 let queryConditions = [];
-loadQueryConditions().then((data) => {
-  queryConditions = data;
-  console.log('successfully load query conditions.');
-});
+
+const loadQueryConditionTemplates = () => {
+  loadQueryConditions().then((data) => {
+    queryConditions = data;
+    console.log('successfully load query conditions.');
+  });
+};
+
+loadQueryConditionTemplates();
 rootObserver.observe(document, rootObserverOptions);

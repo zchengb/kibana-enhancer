@@ -11,7 +11,11 @@
     height: 100% !important;
 }
 
-.ant-select-selection-search-input {
+.ant-select-selector {
+    background-color: #FBFCFD !important;
+}
+
+.queryConditionSelector .queryCondition .ant-select-selector .ant-select-selection-search input {
     outline: none !important;
 }
 
