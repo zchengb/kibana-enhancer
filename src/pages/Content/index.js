@@ -188,31 +188,45 @@ const refreshSelectorOptions = () => {
   }
 };
 
+const hasExistingCondition = async (newQueryCondition) => {
+  const queryConditions = await loadQueryConditions();
+  return queryConditions.some(
+    (condition) => condition.value === newQueryCondition
+  );
+};
+
 const saveQueryCondition = () => {
   const queryCondition = getSearchInputElement().value;
   if (!queryCondition) {
     return;
   }
 
-  loadQueryConditions().then((data) => {
-    const queryConditions = data;
-    const queryConditionTitle = prompt('Please input query condition title');
+  loadQueryConditions()
+    .then(async (data) => {
+      const queryConditions = data;
 
-    if (queryConditionTitle) {
-      queryConditions.push({
-        label: queryConditionTitle,
-        value: queryCondition,
-        key: (queryConditions.length + 1).toString(),
-      });
+      if (await hasExistingCondition(queryCondition)) {
+        alert('This condition template already exists.');
+        return;
+      }
 
-      saveQueryConditions(queryConditions).then((result) => {
-        console.log('saveQueryConditions result:', result);
-        refreshSelectorOptions();
-      });
-    } else {
-      alert('Save failed :(');
-    }
-  });
+      const queryConditionTitle = prompt('Please input query condition title');
+
+      if (queryConditionTitle) {
+        queryConditions.push({
+          label: queryConditionTitle,
+          value: queryCondition,
+          key: (queryConditions.length + 1).toString(),
+        });
+
+        saveQueryConditions(queryConditions).then((result) => {
+          console.log('saveQueryConditions result:', result);
+        });
+      } else {
+        alert('Save failed :(');
+      }
+    })
+    .finally(() => refreshSelectorOptions());
 };
 
 const getTableElement = () => {

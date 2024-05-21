@@ -146,7 +146,21 @@ const ConditionTableView = () => {
     setConditions(conditionTemplates);
   };
 
+  const findExistingCondition = (newCondition) => {
+    return conditions.find(
+      (condition) => condition.value === newCondition.value
+    );
+  };
+
   const handleCreate = (template) => {
+    if (findExistingCondition(template)) {
+      messageApi.open({
+        type: 'error',
+        content: 'Condition template already exists :(',
+      });
+      return;
+    }
+
     const newConditions = [
       ...conditions,
       {
@@ -164,6 +178,15 @@ const ConditionTableView = () => {
   };
 
   const handleEdit = (editedTemplate) => {
+    const existingCondition = findExistingCondition(editedTemplate);
+    if (existingCondition && existingCondition.key !== editedTemplate.key) {
+      messageApi.open({
+        type: 'error',
+        content: 'Condition template already exists :(',
+      });
+      return;
+    }
+
     const editedIndex = conditions.findIndex(
       (item) => item.key === editedTemplate.key
     );
