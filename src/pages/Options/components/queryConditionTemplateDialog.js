@@ -17,7 +17,7 @@ const QueryConditionTemplateDialog = ({
     if (editTemplate) {
       form.setFieldsValue(editTemplate);
     }
-  }, [editTemplate]);
+  }, [editTemplate, isModalOpen]);
 
   const onFinish = (formValue) => {
     handleOk({

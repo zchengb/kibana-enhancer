@@ -124,8 +124,8 @@ const ConditionTableView = () => {
         <Space size="middle">
           <a
             onClick={() => {
-              setEditDialogVisible(true);
               setEditingConditionTemplate(record);
+              setEditDialogVisible(true);
             }}
           >
             Edit
