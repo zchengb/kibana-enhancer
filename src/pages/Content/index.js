@@ -1,20 +1,8 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import ReactDOM from 'react-dom';
 import { loadQueryConditions, saveQueryConditions } from '../store';
 import { Cascader } from 'antd';
 import DOMPurify from 'dompurify';
-
-const injectQuerySelectorOptions = (setOptions) => {
-  loadQueryConditions().then((data) => {
-    const options = data.map((optionItem, index) => ({
-      label: optionItem.label,
-      value: optionItem.value,
-      key: index,
-    }));
-    setOptions(options);
-    console.log('successfully load query conditions.');
-  });
-};
 
 const decodeHTMLEntities = (text) => {
   const parser = new DOMParser();
@@ -43,7 +31,19 @@ const debounce = (func, wait) => {
 
 const debouncedFormatTableContent = debounce(formatTableContent, 2000);
 
-const ConditionSelector = () => {
+const ConditionSelector = ({ originOptions = [] }) => {
+  const [options, setOptions] = useState([]);
+
+  useEffect(() => {
+    setOptions(
+      originOptions.map((option) => ({
+        label: option.label,
+        value: option.value,
+      }))
+    );
+    console.log('successfully inject query selector options.');
+  }, [originOptions]);
+
   const onChange = (value, selectedOptions) => {
     const selectedOption = selectedOptions[0];
     let selectedValue = selectedOption.value;
@@ -84,16 +84,20 @@ const ConditionSelector = () => {
     }
   };
 
-  const filter = (inputValue, path) =>
-    path.some(
+  const filter = (inputValue, path) => {
+    console.log('inputValue:', inputValue);
+    console.log('options', options.length, options);
+    console.log('path:', path);
+    return path.some(
       (option) =>
         option.label.toLowerCase().indexOf(inputValue.toLowerCase()) > -1
     );
+  };
 
   return (
     <Cascader
       className={'queryCondition'}
-      options={queryConditions}
+      options={options}
       onChange={onChange}
       placeholder="Select Query Condition"
       showSearch={{ filter }}
@@ -110,7 +114,10 @@ const addConditionSelector = () => {
 
     queryContainer.insertBefore(selectContainer, queryContainer.lastChild);
 
-    ReactDOM.render(<ConditionSelector />, selectContainer);
+    ReactDOM.render(
+      <ConditionSelector originOptions={queryConditions} />,
+      selectContainer
+    );
     setInterval(() => {
       const selectorInputElement = document.querySelector(
         '.ant-select-selection-search-input'
@@ -180,12 +187,14 @@ const addSaveQueryConditionButton = () => {
 };
 
 const refreshSelectorOptions = () => {
-  injectQuerySelectorOptions((options) => {
-    const selectContainer = getSelectorElement();
-    if (selectContainer) {
-      ReactDOM.render(<ConditionSelector />, selectContainer);
-    }
-  });
+  const selectContainer = getSelectorElement();
+  if (selectContainer) {
+    console.log('start render selector with new options.');
+    ReactDOM.render(
+      <ConditionSelector originOptions={queryConditions} />,
+      selectContainer
+    );
+  }
 };
 
 const saveQueryCondition = () => {
@@ -194,22 +203,25 @@ const saveQueryCondition = () => {
     return;
   }
 
-  loadQueryConditionTemplates();
-  const queryConditionTitle = prompt('Please input query condition title');
+  loadQueryConditions().then((data) => {
+    queryConditions = data;
+    const queryConditionTitle = prompt('Please input query condition title');
 
-  if (queryConditionTitle) {
-    queryConditions.push({
-      label: queryConditionTitle,
-      value: queryCondition,
-    });
+    if (queryConditionTitle) {
+      queryConditions.push({
+        label: queryConditionTitle,
+        value: queryCondition,
+        key: (queryConditions.length + 1).toString(),
+      });
 
-    saveQueryConditions(queryConditions).then((result) =>
-      console.log('save result:', result)
-    );
-    refreshSelectorOptions();
-  } else {
-    alert('Save failed :(');
-  }
+      saveQueryConditions(queryConditions).then((result) => {
+        console.log('saveQueryConditions result:', result);
+        refreshSelectorOptions();
+      });
+    } else {
+      alert('Save failed :(');
+    }
+  });
 };
 
 const addEventListenerOnSearchInput = () => {
@@ -218,7 +230,10 @@ const addEventListenerOnSearchInput = () => {
     searchInputElement.addEventListener('change', () => {
       const selectContainer = getSelectorElement();
       if (selectContainer) {
-        ReactDOM.render(<ConditionSelector />, selectContainer);
+        ReactDOM.render(
+          <ConditionSelector originOptions={queryConditions} />,
+          selectContainer
+        );
       }
     });
     console.log('Successfully add event listener on search input element.');
@@ -279,13 +294,8 @@ const rootObserverOptions = {
 };
 
 let queryConditions = [];
+loadQueryConditions().then((data) => {
+  queryConditions = data;
+});
 
-const loadQueryConditionTemplates = () => {
-  loadQueryConditions().then((data) => {
-    queryConditions = data;
-    console.log('successfully load query conditions.');
-  });
-};
-
-loadQueryConditionTemplates();
 rootObserver.observe(document, rootObserverOptions);
