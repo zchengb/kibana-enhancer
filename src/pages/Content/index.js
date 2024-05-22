@@ -29,7 +29,7 @@ const debounce = (func, wait) => {
   };
 };
 
-const debouncedFormatTableContent = debounce(formatTableContent, 2000);
+const debouncedFormatTableContent = debounce(formatTableContent, 500);
 
 const ConditionSelector = () => {
   const [options, setOptions] = useState([]);
@@ -237,18 +237,38 @@ const getSaveConditionButtonElement = () => {
   return document.getElementById('saveConditionButton');
 };
 
+const isOldTableElement = () => {
+  return getTableElement() === logTableElement;
+};
+
 const addHookOnLogTable = () => {
-  const tableElement = getTableElement();
-  if (tableElement) {
-    logTableObserver.observe(tableElement, {
+  if (isOldTableElement()) {
+    return;
+  }
+
+  logTableElement = getTableElement();
+  if (logTableElement) {
+    logTableObserver?.disconnect();
+    logTableObserver = generateLogTableObserver();
+    logTableObserver.observe(logTableElement, {
       childList: true,
       subtree: true,
       attributes: false,
       characterData: false,
     });
     isLogTableObserving = true;
-    console.log('Successfully add format hook on log table');
+    lastPatternIndexName = getPatterIndexName();
+    debouncedFormatTableContent();
+    console.log('successfully add format hook on log table');
   }
+};
+
+const getPatterIndexName = () => {
+  return (
+    document.querySelector(
+      '.dscSidebar__indexPatternSwitcher .euiButton__text strong'
+    )?.textContent || ''
+  );
 };
 
 const rootObserver = new MutationObserver((mutations) => {
@@ -261,24 +281,23 @@ const rootObserver = new MutationObserver((mutations) => {
       addSaveQueryConditionButton();
     }
 
+    if (lastPatternIndexName !== getPatterIndexName()) {
+      isLogTableObserving = false;
+    }
+
     if (!isLogTableObserving) {
       addHookOnLogTable();
     }
   }
 });
 
-const logTableObserver = new MutationObserver((mutations) => {
-  if (isDiscoverPage()) {
-    mutations.forEach((mutation) => {
-      if (
-        mutation.type === 'childList' &&
-        mutation.target.closest('.kbn-table.table')
-      ) {
-        debouncedFormatTableContent();
-      }
-    });
-  }
-});
+const generateLogTableObserver = () => {
+  return new MutationObserver((mutations) => {
+    if (isDiscoverPage()) {
+      debouncedFormatTableContent();
+    }
+  });
+};
 
 const rootObserverOptions = {
   childList: true,
@@ -287,6 +306,9 @@ const rootObserverOptions = {
   characterData: true,
 };
 
+let logTableElement = undefined;
+let logTableObserver = undefined;
 let isLogTableObserving = false;
+let lastPatternIndexName = '';
 
 rootObserver.observe(document, rootObserverOptions);
