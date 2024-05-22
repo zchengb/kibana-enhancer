@@ -246,18 +246,24 @@ const addHookOnLogTable = () => {
       attributes: false,
       characterData: false,
     });
+    isLogTableObserving = true;
     console.log('Successfully add format hook on log table');
   }
 };
 
 const rootObserver = new MutationObserver((mutations) => {
-  if (
-    isDiscoverPage() &&
-    (!getSelectorElement() || !getSaveConditionButtonElement())
-  ) {
-    addConditionSelector();
-    addSaveQueryConditionButton();
-    addHookOnLogTable();
+  if (isDiscoverPage()) {
+    if (!getSelectorElement()) {
+      addConditionSelector();
+    }
+
+    if (!getSaveConditionButtonElement()) {
+      addSaveQueryConditionButton();
+    }
+
+    if (!isLogTableObserving) {
+      addHookOnLogTable();
+    }
   }
 });
 
@@ -280,5 +286,7 @@ const rootObserverOptions = {
   attributes: true,
   characterData: true,
 };
+
+let isLogTableObserving = false;
 
 rootObserver.observe(document, rootObserverOptions);
