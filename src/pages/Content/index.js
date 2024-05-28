@@ -84,10 +84,13 @@ const ConditionSelector = () => {
   };
 
   const filter = (inputValue, path) => {
-    return path.some(
-      (option) =>
-        option.label.toLowerCase().indexOf(inputValue.toLowerCase()) > -1
-    );
+    const keywords = inputValue.trim().split(' ').map(keyword => keyword.toLowerCase());
+    return path.some((option) => {
+      const label = option.label.toLowerCase();
+      return keywords.every((keyword) => {
+        return label.indexOf(keyword) > -1;
+      });
+    });
   };
 
   return (
