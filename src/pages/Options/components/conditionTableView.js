@@ -15,7 +15,7 @@ import {
   verticalListSortingStrategy,
 } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
-import { Button, Card, message, Popconfirm, Space, Table } from 'antd';
+import { Button, Card, message, Modal, Popconfirm, Space, Table } from 'antd';
 import './conditionTableView.scss';
 import { loadQueryConditions, saveQueryConditions } from '../../store.js';
 import QueryConditionTemplateDialog from './queryConditionTemplateDialog';
@@ -61,6 +61,7 @@ const ConditionTableView = () => {
   const isInitialMount = useRef(true);
   const [messageApi, contextHolder] = message.useMessage();
   const [yamlExampleVisible, setYamlExampleVisible] = useState(false);
+  const { confirm } = Modal;
 
   useEffect(() => {
     loadQueryConditions().then((data) => {
@@ -228,25 +229,101 @@ const ConditionTableView = () => {
     }
   };
 
-  const importConditionsFromYaml = (yamlString) => {
-    const confirmImport = window.confirm(
-      'Are you sure you want to import conditions? \n\n !!! This will overwrite existing data !!!'
-    );
-    if (!confirmImport) return;
+  const fullImportConditions = (conditionTemplates) => {
+    const newConditions = conditionTemplates.map((template, index) => ({
+      key: (index + 1).toString(),
+      label: template.label,
+      value: template.value,
+    }));
+    setConditions(newConditions);
+    messageApi.open({
+      type: 'success',
+      content: 'Conditions imported successfully!',
+    });
+  };
 
-    try {
-      // @ts-ignore
-      const { conditionTemplates } = yaml.load(yamlString);
-      if (Array.isArray(conditionTemplates)) {
-        const newConditions = conditionTemplates.map((template, index) => ({
-          key: (index + 1).toString(),
+  const incrementalImportConditions = (conditionTemplates) => {
+    const originTemplateMap = {};
+    let currentIndex = conditions.length;
+    let importedCount = 0;
+
+    conditions.forEach((template) => {
+      originTemplateMap[template.value] = template;
+    });
+
+    const newConditions = [...conditions];
+
+    conditionTemplates.forEach((template) => {
+      if (!originTemplateMap[template.value]) {
+        newConditions.push({
+          key: (currentIndex + 1).toString(),
           label: template.label,
           value: template.value,
-        }));
-        setConditions(newConditions);
-        messageApi.open({
-          type: 'success',
-          content: 'Conditions imported successfully!',
+        });
+        currentIndex += 1;
+        importedCount += 1;
+      }
+    });
+
+    setConditions(newConditions);
+    messageApi.open({
+      type: 'success',
+      content: `${importedCount} conditions imported successfully!`,
+    });
+  };
+
+  const importConditions = (yamlString) => {
+    try {
+      const { conditionTemplates } = yaml.load(yamlString);
+      if (Array.isArray(conditionTemplates)) {
+        const uniqueConditionTemplates = conditionTemplates.filter(
+          (condition, index, self) =>
+            index === self.findIndex((t) => t.value === condition.value)
+        );
+
+        confirm({
+          width: 500,
+          title: 'Choose import method',
+          icon: <></>,
+          content: (
+            <div>
+              <strong>- Incremental Import: </strong>
+              <span>
+                This operation will add new data to the existing templates.
+              </span>
+              <br />
+              <strong>- Full Import: </strong>
+              <span>
+                This operation will override all existing templates with new
+                templates.
+              </span>
+            </div>
+          ),
+          footer: (
+            <div className={'importConfirmDialogFooter'}>
+              <Button onClick={() => Modal.destroyAll()}>Cancel</Button>
+              <Button
+                type="primary"
+                onClick={() => {
+                  Modal.destroyAll();
+                  incrementalImportConditions(uniqueConditionTemplates);
+                }}
+              >
+                Incremental Import
+              </Button>
+              <Button
+                type="primary"
+                onClick={() => {
+                  Modal.destroyAll();
+                  fullImportConditions(uniqueConditionTemplates);
+                }}
+              >
+                Full Import
+              </Button>
+            </div>
+          ),
+          onOk() {},
+          onCancel() {},
         });
       } else {
         messageApi.open({
@@ -260,6 +337,8 @@ const ConditionTableView = () => {
         type: 'error',
         content: 'Failed to import conditions from YAML.',
       });
+    } finally {
+      clearFileSelect();
     }
   };
 
@@ -267,10 +346,8 @@ const ConditionTableView = () => {
     const file = event.target.files[0];
     const reader = new FileReader();
     reader.onload = (event) => {
-      // @ts-ignore
       const yamlString = event.target.result;
-      // @ts-ignore
-      importConditionsFromYaml(yamlString);
+      importConditions(yamlString);
     };
     reader.readAsText(file);
   };
@@ -315,6 +392,13 @@ const ConditionTableView = () => {
 
   const hideYAMLExample = () => {
     setYamlExampleVisible(false);
+  };
+
+  const clearFileSelect = () => {
+    const fileInput = document.getElementById('fileInput');
+    if (fileInput) {
+      fileInput.value = '';
+    }
   };
 
   return (

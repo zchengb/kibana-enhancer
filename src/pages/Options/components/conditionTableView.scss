@@ -33,3 +33,10 @@
     line-height: 1.7em;
   }
 }
+
+.importConfirmDialogFooter {
+  display: flex;
+  gap: 12px;
+  margin-top: 16px;
+  justify-content: end;
+}
