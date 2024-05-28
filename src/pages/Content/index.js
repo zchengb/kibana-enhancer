@@ -100,6 +100,7 @@ const ConditionSelector = () => {
       onChange={onChange}
       placeholder="Select Query Condition"
       showSearch={{ filter }}
+      allowClear={false}
     />
   );
 };
