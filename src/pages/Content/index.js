@@ -2,12 +2,11 @@ import React, { useEffect, useState } from 'react';
 import ReactDOM from 'react-dom';
 import { loadQueryConditions, saveQueryConditions } from '../store';
 import { Cascader } from 'antd';
-import DOMPurify from 'dompurify';
 
 const decodeHTMLEntities = (text) => {
-  const parser = new DOMParser();
-  const dom = parser.parseFromString(text, 'text/html');
-  return dom.body.textContent;
+  const textAreas = document.createElement('textarea');
+  textAreas.innerHTML = text;
+  return textAreas.value;
 };
 
 const formatTableContent = () => {
@@ -16,7 +15,7 @@ const formatTableContent = () => {
   );
   console.log('start formatting table content with size:', tableCells.length);
   tableCells.forEach((cell) => {
-    cell.innerHTML = DOMPurify.sanitize(decodeHTMLEntities(cell.innerHTML));
+    cell.innerHTML = decodeHTMLEntities(cell.innerHTML);
     cell.setAttribute('data-formatted', 'true');
   });
 };
