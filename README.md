@@ -2,6 +2,10 @@
 
 # Kibana Enhancer (MV3)
 
+## 🌟 Install
+
+- Chrome Web Store: [Download](https://chromewebstore.google.com/detail/kibana-enhancer/edajldaeadolekehbljcjkeeglogfofc?hl=en-US&utm_source=ext_sidebar)
+
 ## 🎯 Features
 
 This browser extension is a front-end application designed for managing and selecting query conditions. It provides features such as dynamically loading query conditions, saving user-defined query conditions, and formatting table content to enhance user efficiency in data management and querying.
