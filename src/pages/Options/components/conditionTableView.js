@@ -163,12 +163,12 @@ const ConditionTableView = () => {
     }
 
     const newConditions = [
-      ...conditions,
       {
         key: (conditions.length + 1).toString(),
         label: template.label,
         value: template.value,
       },
+      ...conditions,
     ];
     setConditions(newConditions);
     setCreatDialogVisible(false);

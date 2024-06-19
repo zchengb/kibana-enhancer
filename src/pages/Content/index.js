@@ -83,7 +83,10 @@ const ConditionSelector = () => {
   };
 
   const filter = (inputValue, path) => {
-    const keywords = inputValue.trim().split(' ').map(keyword => keyword.toLowerCase());
+    const keywords = inputValue
+      .trim()
+      .split(' ')
+      .map((keyword) => keyword.toLowerCase());
     return path.some((option) => {
       const label = option.label.toLowerCase();
       return keywords.every((keyword) => {
@@ -216,7 +219,7 @@ const saveQueryCondition = () => {
       const queryConditionTitle = prompt('Please input query condition title');
 
       if (queryConditionTitle) {
-        queryConditions.push({
+        queryConditions.unshift({
           label: queryConditionTitle,
           value: queryCondition,
           key: (queryConditions.length + 1).toString(),
