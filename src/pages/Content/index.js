@@ -9,12 +9,21 @@ const decodeHTMLEntities = (text) => {
   return textAreas.value;
 };
 
+const logTableObserverOptions = {
+  childList: true,
+  subtree: true,
+  attributes: false,
+  characterData: false,
+};
+
 const formatTableContent = () => {
+  logTableObserver?.disconnect();
   const tableCells = document.querySelectorAll('.truncate-by-height');
   console.log('start formatting table content with size:', tableCells.length);
   tableCells.forEach((cell) => {
     cell.innerHTML = decodeHTMLEntities(cell.innerHTML);
   });
+  logTableObserver.observe(logTableElement, logTableObserverOptions);
 };
 
 const debounce = (func, wait) => {
@@ -253,12 +262,7 @@ const addHookOnLogTable = () => {
   if (logTableElement) {
     logTableObserver?.disconnect();
     logTableObserver = generateLogTableObserver();
-    logTableObserver.observe(logTableElement, {
-      childList: true,
-      subtree: true,
-      attributes: false,
-      characterData: false,
-    });
+    logTableObserver.observe(logTableElement, logTableObserverOptions);
     isLogTableObserving = true;
     lastPatternIndexName = getPatterIndexName();
     debouncedFormatTableContent();
@@ -295,9 +299,13 @@ const rootObserver = new MutationObserver((mutations) => {
 });
 
 const generateLogTableObserver = () => {
-  return new MutationObserver((mutations) => {
-    if (isDiscoverPage()) {
-      debouncedFormatTableContent();
+  return new MutationObserver((mutationsList, observer) => {
+    for (const mutation of mutationsList) {
+      if (mutation.type === 'childList') {
+        if (isDiscoverPage()) {
+          debouncedFormatTableContent();
+        }
+      }
     }
   });
 };
