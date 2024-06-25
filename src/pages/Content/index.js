@@ -10,13 +10,10 @@ const decodeHTMLEntities = (text) => {
 };
 
 const formatTableContent = () => {
-  const tableCells = document.querySelectorAll(
-    '.truncate-by-height:not([data-formatted="true"])'
-  );
+  const tableCells = document.querySelectorAll('.truncate-by-height');
   console.log('start formatting table content with size:', tableCells.length);
   tableCells.forEach((cell) => {
     cell.innerHTML = decodeHTMLEntities(cell.innerHTML);
-    cell.setAttribute('data-formatted', 'true');
   });
 };
 
