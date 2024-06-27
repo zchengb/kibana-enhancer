@@ -42,7 +42,10 @@ const ConditionSelector = () => {
   useEffect(() => {
     loadQueryConditions().then((data) => {
       setOptions(
-        data.map((item) => ({ label: item.label, value: item.value }))
+        data.map((item) => ({
+          label: item.label,
+          value: item.key,
+        }))
       );
       console.log('successfully inject query selector options.');
     });
@@ -50,55 +53,62 @@ const ConditionSelector = () => {
 
   const onChange = (value, selectedOptions) => {
     const selectedOption = selectedOptions[0];
-    let selectedValue = selectedOption.value;
-    const selectedIndex = selectedOption.indexPattern;
 
-    const params = new Set();
-    const regex = /{([\w\u4e00-\u9fa5]+)}/g;
-    let match;
+    loadQueryConditions().then((conditions) => {
+      const selectedCondition = conditions.find(
+        (condition) => condition.key === selectedOption.value
+      );
 
-    while ((match = regex.exec(selectedValue))?.length > 0) {
-      params.add(match[1]);
-    }
+      let selectedValue = selectedCondition.value;
+      const selectedIndex = selectedCondition.indexPattern;
 
-    if (params.size > 0) {
-      const userInputs = promptForInputs(params);
+      const params = new Set();
+      const regex = /{([\w\u4e00-\u9fa5]+)}/g;
+      let match;
 
-      if (userInputs) {
-        params.forEach((param) => {
-          selectedValue = selectedValue.replaceAll(
-            `{${param}}`,
-            userInputs[param]
-          );
-        });
+      while ((match = regex.exec(selectedValue))?.length > 0) {
+        params.add(match[1]);
       }
-    } else {
-      console.log('No parameters found in the template.');
-    }
 
-    const searchInput = getSearchInputElement();
-    if (searchInput) {
-      searchInput.value = selectedValue;
-      searchInput.textContent = selectedValue;
+      if (params.size > 0) {
+        const userInputs = promptForInputs(params);
 
-      const event = new Event('input', { bubbles: true });
-      searchInput.dispatchEvent(event);
-
-      const changeEvent = new Event('change', { bubbles: true });
-      searchInput.dispatchEvent(changeEvent);
-
-      setTimeout(() => {
-        const queryButton = getQueryButton();
-        if (queryButton) {
-          queryButton.click();
-          hideSuggestionPanel();
+        if (userInputs) {
+          params.forEach((param) => {
+            selectedValue = selectedValue.replaceAll(
+              `{${param}}`,
+              userInputs[param]
+            );
+          });
         }
-      }, 100);
-    }
+      } else {
+        console.log('No parameters found in the template.');
+      }
 
-    if (selectedIndex) {
-      clickTargetIndexPattern(selectedIndex);
-    }
+      const searchInput = getSearchInputElement();
+      if (searchInput) {
+        searchInput.value = selectedValue;
+        searchInput.textContent = selectedValue;
+
+        const event = new Event('input', { bubbles: true });
+        searchInput.dispatchEvent(event);
+
+        const changeEvent = new Event('change', { bubbles: true });
+        searchInput.dispatchEvent(changeEvent);
+
+        setTimeout(() => {
+          const queryButton = getQueryButton();
+          if (queryButton) {
+            queryButton.click();
+            hideSuggestionPanel();
+          }
+        }, 100);
+      }
+
+      if (selectedIndex) {
+        clickTargetIndexPattern(selectedIndex);
+      }
+    });
   };
 
   const filter = (inputValue, path) => {
@@ -226,10 +236,12 @@ const refreshSelectorOptions = () => {
   }
 };
 
-const hasExistingCondition = async (newQueryCondition) => {
+const hasExistingCondition = async (newQueryCondition, indexPattern) => {
   const queryConditions = await loadQueryConditions();
   return queryConditions.some(
-    (condition) => condition.value === newQueryCondition
+    (condition) =>
+      condition.value === newQueryCondition &&
+      condition.indexPattern === indexPattern
   );
 };
 
@@ -243,7 +255,7 @@ const saveQueryCondition = () => {
     .then(async (data) => {
       const queryConditions = data;
 
-      if (await hasExistingCondition(queryCondition)) {
+      if (await hasExistingCondition(queryCondition, getIndexPattern())) {
         alert('This condition template already exists.');
         return;
       }
@@ -351,8 +363,8 @@ const clickTargetIndexPattern = (targetIndexPattern) => {
 
   if (!getPatternSelectPanelElement()) {
     getPatternSelectButtonElement().click();
-    simulateScrollAndClickIndexPattern(targetIndexPattern);
   }
+  simulateScrollAndClickIndexPattern(targetIndexPattern);
 };
 
 const simulateScrollAndClickIndexPattern = (targetIndexPattern) => {
@@ -365,7 +377,7 @@ const simulateScrollAndClickIndexPattern = (targetIndexPattern) => {
 
   if (!patternScrollListContainer) {
     console.error('List container not found.');
-    requestAnimationFrame(simulateScrollAndClickIndexPattern);
+    requestAnimationFrame(() => clickTargetIndexPattern(targetIndexPattern));
   }
 
   const currentItems = Array.from(
@@ -383,7 +395,7 @@ const simulateScrollAndClickIndexPattern = (targetIndexPattern) => {
   patternScrollListContainer.scrollTop += 200;
 
   if (!scrollCompleted()) {
-    requestAnimationFrame(fetchIndexPattern);
+    requestAnimationFrame(() => clickTargetIndexPattern(targetIndexPattern));
   }
 };
 
