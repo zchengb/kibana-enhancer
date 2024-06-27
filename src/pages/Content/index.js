@@ -278,6 +278,72 @@ const getPatterIndexName = () => {
   );
 };
 
+const getPatternSelectPanelElement = () => {
+  return document.querySelector('.euiPanel.euiPopover__panel-isOpen');
+};
+
+const getPatternSelectButtonElement = () => {
+  return document.querySelector(
+    '.euiButton.euiButton--text.euiButton--fullWidth'
+  );
+};
+
+const simulateScrollAndRecordIndexPattern = () => {
+  if (!scrolling) return;
+
+  const patternScrollListContainer = getPatternScrollContainer();
+
+  const scrollCompleted = () =>
+    patternScrollListContainer.scrollTop +
+    patternScrollListContainer.clientHeight >=
+    patternScrollListContainer.scrollHeight;
+
+  if (!patternScrollListContainer) {
+    console.error('List container not found.');
+    requestAnimationFrame(simulateScrollAndRecordIndexPattern);
+  }
+
+  const currentItems = Array.from(
+    patternScrollListContainer.querySelectorAll('li')
+  );
+  currentItems.forEach((item) => {
+    indexPattern.add(item.textContent);
+  });
+
+  patternScrollListContainer.scrollTop += 200;
+
+  if (scrollCompleted()) {
+    scrolling = false;
+    console.log('All pattern indexes items recorded:', indexPattern);
+  } else {
+    requestAnimationFrame(simulateScrollAndRecordIndexPattern);
+  }
+};
+
+const fetchIndexPattern = () => {
+  if (!scrolling) {
+    scrolling = true;
+    simulateScrollAndRecordIndexPattern();
+  }
+};
+
+const generateLogTableObserver = () => {
+  return new MutationObserver((mutationsList, observer) => {
+    for (const mutation of mutationsList) {
+      if (mutation.type === 'childList') {
+        if (isDiscoverPage()) {
+          debouncedFormatTableContent();
+        }
+      }
+    }
+  });
+};
+
+const getPatternScrollContainer = () => {
+  return document.querySelector('.euiSelectableList__list');
+};
+
+
 const rootObserver = new MutationObserver((mutations) => {
   if (isDiscoverPage()) {
     if (!getSelectorElement()) {
@@ -295,20 +361,19 @@ const rootObserver = new MutationObserver((mutations) => {
     if (!isLogTableObserving) {
       addHookOnLogTable();
     }
+
+    const patternSelectButton = getPatternSelectButtonElement();
+    if (
+      indexPattern.size === 0 &&
+      !getPatternSelectPanelElement() &&
+      patternSelectButton
+    ) {
+      patternSelectButton.click();
+      fetchIndexPattern();
+      patternSelectButton.click();
+    }
   }
 });
-
-const generateLogTableObserver = () => {
-  return new MutationObserver((mutationsList, observer) => {
-    for (const mutation of mutationsList) {
-      if (mutation.type === 'childList') {
-        if (isDiscoverPage()) {
-          debouncedFormatTableContent();
-        }
-      }
-    }
-  });
-};
 
 const rootObserverOptions = {
   childList: true,
@@ -321,5 +386,7 @@ let logTableElement = undefined;
 let logTableObserver = undefined;
 let isLogTableObserving = false;
 let lastPatternIndexName = '';
+let indexPattern = new Set();
+let scrolling = false;
 
 rootObserver.observe(document, rootObserverOptions);
