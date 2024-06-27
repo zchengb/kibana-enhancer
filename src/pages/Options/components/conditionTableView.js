@@ -81,13 +81,10 @@ const ConditionTableView = () => {
     if (isInitialMount.current) {
       isInitialMount.current = false;
     } else {
-      console.log('conditions changed!');
-      saveQueryConditions(
-        conditions.map((condition) => ({
-          label: condition.label,
-          value: condition.value,
-        }))
-      ).then((result) => console.log('save query condition result:', result));
+      console.log('conditions changed!', conditions);
+      saveQueryConditions(conditions).then((result) =>
+        console.log('save query condition result:', result)
+      );
     }
   }, [conditions]);
 
@@ -103,6 +100,12 @@ const ConditionTableView = () => {
     {
       title: 'Title',
       dataIndex: 'label',
+    },
+    {
+      title: 'Index Pattern',
+      dataIndex: 'indexPattern',
+      render: (indexPattern) =>
+        indexPattern ? <span className="variable">{indexPattern}</span> : '-',
     },
     {
       title: 'Template',
@@ -149,7 +152,9 @@ const ConditionTableView = () => {
 
   const findExistingCondition = (newCondition) => {
     return conditions.find(
-      (condition) => condition.value === newCondition.value
+      (condition) =>
+        condition.value === newCondition.value &&
+        condition.indexPattern === newCondition.indexPattern
     );
   };
 
@@ -167,6 +172,7 @@ const ConditionTableView = () => {
         key: (conditions.length + 1).toString(),
         label: template.label,
         value: template.value,
+        indexPattern: template.indexPattern,
       },
       ...conditions,
     ];

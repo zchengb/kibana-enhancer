@@ -26,6 +26,7 @@ const QueryConditionTemplateDialog = ({
       value: DOMPurify.sanitize(formValue.value, {
         USE_PROFILES: { html: false },
       }),
+      indexPattern: formValue.indexPattern,
     });
   };
 
@@ -38,6 +39,16 @@ const QueryConditionTemplateDialog = ({
       return Promise.reject('Please input title!');
     } else if (value.length > 32) {
       return Promise.reject('Title must be less than 32 characters!');
+    } else {
+      return Promise.resolve();
+    }
+  };
+
+  const validateIndexPattern = (rule, value) => {
+    if (!value) {
+      return Promise.resolve();
+    } else if (value.length > 64) {
+      return Promise.reject('Index Pattern must be less than 64 characters!');
     } else {
       return Promise.resolve();
     }
@@ -82,6 +93,13 @@ const QueryConditionTemplateDialog = ({
           rules={[{ required: true, validator: validateTitle }]}
         >
           <Input showCount maxLength={32} />
+        </Form.Item>
+        <Form.Item
+          label="Index Pattern"
+          name="indexPattern"
+          rules={[{ validator: validateIndexPattern }]}
+        >
+          <Input showCount maxLength={64} />
         </Form.Item>
         <Form.Item
           label="Template"
