@@ -51,6 +51,7 @@ const ConditionSelector = () => {
   const onChange = (value, selectedOptions) => {
     const selectedOption = selectedOptions[0];
     let selectedValue = selectedOption.value;
+    const selectedIndex = selectedOption.indexPattern;
 
     const params = new Set();
     const regex = /{([\w\u4e00-\u9fa5]+)}/g;
@@ -85,6 +86,18 @@ const ConditionSelector = () => {
 
       const changeEvent = new Event('change', { bubbles: true });
       searchInput.dispatchEvent(changeEvent);
+
+      setTimeout(() => {
+        const queryButton = getQueryButton();
+        if (queryButton) {
+          queryButton.click();
+          hideSuggestionPanel();
+        }
+      }, 100);
+    }
+
+    if (selectedIndex) {
+      clickTargetIndexPattern(selectedIndex);
     }
   };
 
@@ -110,6 +123,19 @@ const ConditionSelector = () => {
       showSearch={{ filter }}
       allowClear={false}
     />
+  );
+};
+
+const hideSuggestionPanel = () => {
+  const suggestionPanel = document.querySelector('.kbnTypeahead');
+  if (suggestionPanel) {
+    suggestionPanel.style.display = 'none';
+  }
+};
+
+const getQueryButton = () => {
+  return document.querySelector(
+    'button.euiSuperUpdateButton[data-test-subj=querySubmitButton]'
   );
 };
 
@@ -229,6 +255,7 @@ const saveQueryCondition = () => {
           label: queryConditionTitle,
           value: queryCondition,
           key: (queryConditions.length + 1).toString(),
+          indexPattern: getIndexPattern(),
         });
 
         saveQueryConditions(queryConditions).then((result) => {
@@ -264,13 +291,13 @@ const addHookOnLogTable = () => {
     logTableObserver = generateLogTableObserver();
     logTableObserver.observe(logTableElement, logTableObserverOptions);
     isLogTableObserving = true;
-    lastPatternIndexName = getPatterIndexName();
+    lastPatternIndexName = getIndexPattern();
     debouncedFormatTableContent();
     console.log('successfully add format hook on log table');
   }
 };
 
-const getPatterIndexName = () => {
+const getIndexPattern = () => {
   return (
     document.querySelector(
       '.dscSidebar__indexPatternSwitcher .euiButton__text strong'
@@ -288,19 +315,17 @@ const getPatternSelectButtonElement = () => {
   );
 };
 
-const simulateScrollAndRecordIndexPattern = () => {
-  if (!scrolling) return;
-
+const fetchIndexPattern = () => {
   const patternScrollListContainer = getPatternScrollContainer();
 
   const scrollCompleted = () =>
     patternScrollListContainer.scrollTop +
-    patternScrollListContainer.clientHeight >=
+      patternScrollListContainer.clientHeight >=
     patternScrollListContainer.scrollHeight;
 
   if (!patternScrollListContainer) {
     console.error('List container not found.');
-    requestAnimationFrame(simulateScrollAndRecordIndexPattern);
+    requestAnimationFrame(fetchIndexPattern);
   }
 
   const currentItems = Array.from(
@@ -313,17 +338,52 @@ const simulateScrollAndRecordIndexPattern = () => {
   patternScrollListContainer.scrollTop += 200;
 
   if (scrollCompleted()) {
-    scrolling = false;
     console.log('All pattern indexes items recorded:', indexPattern);
   } else {
-    requestAnimationFrame(simulateScrollAndRecordIndexPattern);
+    requestAnimationFrame(fetchIndexPattern);
   }
 };
 
-const fetchIndexPattern = () => {
-  if (!scrolling) {
-    scrolling = true;
-    simulateScrollAndRecordIndexPattern();
+const clickTargetIndexPattern = (targetIndexPattern) => {
+  if (!getPatternSelectButtonElement()) {
+    return;
+  }
+
+  if (!getPatternSelectPanelElement()) {
+    getPatternSelectButtonElement().click();
+    simulateScrollAndClickIndexPattern(targetIndexPattern);
+  }
+};
+
+const simulateScrollAndClickIndexPattern = (targetIndexPattern) => {
+  const patternScrollListContainer = getPatternScrollContainer();
+
+  const scrollCompleted = () =>
+    patternScrollListContainer.scrollTop +
+      patternScrollListContainer.clientHeight >=
+    patternScrollListContainer.scrollHeight;
+
+  if (!patternScrollListContainer) {
+    console.error('List container not found.');
+    requestAnimationFrame(simulateScrollAndClickIndexPattern);
+  }
+
+  const currentItems = Array.from(
+    patternScrollListContainer.querySelectorAll('li')
+  );
+
+  for (const indexPatternElement of currentItems) {
+    if (indexPatternElement.textContent === targetIndexPattern) {
+      console.log('trigger click on:', targetIndexPattern);
+      indexPatternElement.click();
+      return;
+    }
+  }
+
+  patternScrollListContainer.scrollTop += 200;
+
+  if (!scrollCompleted()) {
+    requestAnimationFrame(fetchIndexPattern);
   }
 };
 
@@ -343,7 +403,6 @@ const getPatternScrollContainer = () => {
   return document.querySelector('.euiSelectableList__list');
 };
 
-
 const rootObserver = new MutationObserver((mutations) => {
   if (isDiscoverPage()) {
     if (!getSelectorElement()) {
@@ -354,7 +413,7 @@ const rootObserver = new MutationObserver((mutations) => {
       addSaveQueryConditionButton();
     }
 
-    if (lastPatternIndexName !== getPatterIndexName()) {
+    if (lastPatternIndexName !== getIndexPattern()) {
       isLogTableObserving = false;
     }
 
@@ -387,6 +446,5 @@ let logTableObserver = undefined;
 let isLogTableObserving = false;
 let lastPatternIndexName = '';
 let indexPattern = new Set();
-let scrolling = false;
 
 rootObserver.observe(document, rootObserverOptions);
