@@ -123,7 +123,7 @@ const addConditionSelector = () => {
     queryContainer.insertBefore(selectContainer, queryContainer.lastChild);
 
     ReactDOM.render(<ConditionSelector />, selectContainer);
-    setInterval(() => {
+    setTimeout(() => {
       const selectorInputElement = document.querySelector(
         '.ant-select-selection-search-input'
       );
