@@ -240,6 +240,7 @@ const ConditionTableView = () => {
       key: (index + 1).toString(),
       label: template.label,
       value: template.value,
+      indexPattern: template.indexPattern,
     }));
     setConditions(newConditions);
     messageApi.open({
@@ -265,6 +266,7 @@ const ConditionTableView = () => {
           key: (currentIndex + 1).toString(),
           label: template.label,
           value: template.value,
+          indexPattern: template.indexPattern,
         });
         currentIndex += 1;
         importedCount += 1;
