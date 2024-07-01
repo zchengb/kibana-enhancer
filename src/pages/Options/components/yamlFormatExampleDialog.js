@@ -21,9 +21,11 @@ const YamlFormatExampleDialog = ({ isModalOpen, handleCancel }) => {
       >
         {`conditionTemplates:
   - label: Example Title 1
-    value: Example log template 1 with {variable} 
+    value: Example log template 1 with {variable}
+    indexPattern: '*app-logs*'
   - label: Example Title 2
-    value: Example log template 2`}
+    value: Example log template 2
+    indexPattern: '*other*'`}
       </SyntaxHighlighter>
     </Modal>
   );
