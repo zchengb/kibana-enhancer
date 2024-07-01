@@ -9,21 +9,12 @@ const decodeHTMLEntities = (text) => {
   return textAreas.value;
 };
 
-const logTableObserverOptions = {
-  childList: true,
-  subtree: true,
-  attributes: false,
-  characterData: false,
-};
-
 const formatTableContent = () => {
-  logTableObserver?.disconnect();
   const tableCells = document.querySelectorAll('.truncate-by-height');
   console.log('start formatting table content with size:', tableCells.length);
   tableCells.forEach((cell) => {
     cell.innerHTML = decodeHTMLEntities(cell.innerHTML);
   });
-  logTableObserver.observe(logTableElement, logTableObserverOptions);
 };
 
 const debounce = (func, wait) => {
@@ -280,33 +271,8 @@ const saveQueryCondition = () => {
     .finally(() => refreshSelectorOptions());
 };
 
-const getTableElement = () => {
-  return document.querySelector('.kbn-table.table');
-};
-
 const getSaveConditionButtonElement = () => {
   return document.getElementById('saveConditionButton');
-};
-
-const isOldTableElement = () => {
-  return getTableElement() === logTableElement;
-};
-
-const addHookOnLogTable = () => {
-  if (isOldTableElement()) {
-    return;
-  }
-
-  logTableElement = getTableElement();
-  if (logTableElement) {
-    logTableObserver?.disconnect();
-    logTableObserver = generateLogTableObserver();
-    logTableObserver.observe(logTableElement, logTableObserverOptions);
-    isLogTableObserving = true;
-    lastPatternIndexName = getIndexPattern();
-    debouncedFormatTableContent();
-    console.log('successfully add format hook on log table');
-  }
 };
 
 const getIndexPattern = () => {
@@ -399,38 +365,19 @@ const simulateScrollAndClickIndexPattern = (targetIndexPattern) => {
   }
 };
 
-const generateLogTableObserver = () => {
-  return new MutationObserver((mutationsList, observer) => {
-    for (const mutation of mutationsList) {
-      if (mutation.type === 'childList') {
-        if (isDiscoverPage()) {
-          debouncedFormatTableContent();
-        }
-      }
-    }
-  });
-};
-
 const getPatternScrollContainer = () => {
   return document.querySelector('.euiSelectableList__list');
 };
 
 const rootObserver = new MutationObserver((mutations) => {
   if (isDiscoverPage()) {
+    rootObserver?.disconnect();
     if (!getSelectorElement()) {
       addConditionSelector();
     }
 
     if (!getSaveConditionButtonElement()) {
       addSaveQueryConditionButton();
-    }
-
-    if (lastPatternIndexName !== getIndexPattern()) {
-      isLogTableObserving = false;
-    }
-
-    if (!isLogTableObserving) {
-      addHookOnLogTable();
     }
 
     const patternSelectButton = getPatternSelectButtonElement();
@@ -443,6 +390,9 @@ const rootObserver = new MutationObserver((mutations) => {
       fetchIndexPattern();
       patternSelectButton.click();
     }
+
+    debouncedFormatTableContent();
+    setTimeout(() => rootObserver.observe(document, rootObserverOptions), 1000);
   }
 });
 
@@ -453,10 +403,6 @@ const rootObserverOptions = {
   characterData: true,
 };
 
-let logTableElement = undefined;
-let logTableObserver = undefined;
-let isLogTableObserving = false;
-let lastPatternIndexName = '';
 let indexPattern = new Set();
 
 rootObserver.observe(document, rootObserverOptions);
